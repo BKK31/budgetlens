@@ -7,3 +7,9 @@ class BudgetState{
   double todaysSpend = 0.0;
 }
 
+class Transaction{
+  double amount;
+  String tag;
+  DateTime datetime;
+  Transaction(this.amount, this.tag, this.datetime);
+}

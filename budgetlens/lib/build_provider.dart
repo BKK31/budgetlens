@@ -2,11 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'models.dart';
 import 'calculator.dart';
 
-class BudgetProvider extends ChangeNotifier{ // ChangeNotifier to allow state management
+class BudgetProvider extends ChangeNotifier {
+  // ChangeNotifier to allow state management
+
+  List<Transaction> transactions = [];
   final BudgetState state = BudgetState();
   final BudgetCalculator calculator = BudgetCalculator();
 
-  void addExpense(double amount){
+  void addExpense(double amount) {
     calculator.addExpense(state, amount);
     notifyListeners(); // Notify listeners about state changes
   }
@@ -22,9 +25,9 @@ class BudgetProvider extends ChangeNotifier{ // ChangeNotifier to allow state ma
   }
 
   double get displayAmount {
-    if(state.viewMode){
+    if (state.viewMode) {
       return calculator.getRemainingToday(state);
-    }else{
+    } else {
       return calculator.getRemainingBudget(state);
     }
   }
@@ -39,5 +42,16 @@ class BudgetProvider extends ChangeNotifier{ // ChangeNotifier to allow state ma
 
   double get remainingBudget {
     return calculator.getRemainingBudget(state);
+  }
+
+  void recordTransaction(double amount, String tag) {
+    Transaction newTransaction = Transaction(amount, tag, DateTime.now());
+    transactions.add(newTransaction);
+    state.totalSpent += amount;
+    state.todaysSpend += amount;
+  }
+
+  List<String> get uniqueTags {
+    return transactions.map((t) => t.tag).toSet().toList();
   }
 }
