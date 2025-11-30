@@ -14,6 +14,7 @@ class BudgetProvider extends ChangeNotifier {
     if (today != state.lastTransactionDay) {
       state.todaysSpend = 0.0;
       state.lastTransactionDay = today;
+      state.dailyAllowance = calculator.getDailyAllowance(state);
       notifyListeners();
     }
   }
@@ -48,7 +49,7 @@ class BudgetProvider extends ChangeNotifier {
 
   double get dailyAllowance {
     checkAndResetForNewDay();
-    return calculator.getDailyAllowance(state);
+    return state.dailyAllowance;
   }
 
   double get remainingBudget {
@@ -91,6 +92,7 @@ class BudgetProvider extends ChangeNotifier {
     state.todaysSpend = 0.0;
     state.lastTransactionDay = DateTime.now().day;
     transactions.clear();
+    state.dailyAllowance = calculator.getDailyAllowance(state);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('totalBudget', budget);
@@ -150,7 +152,8 @@ class BudgetProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final savedBudget = prefs.getDouble('totalBudget');
     final savedStartDate = prefs.getString('startDate');
-    final savedEndDate = prefs.getString('endDate');
+    final savedEndDate =
+        prefs.getString('endDate');
 
     if (savedBudget != null && savedStartDate != null && savedEndDate != null) {
       state.totalBudget = savedBudget;
@@ -159,6 +162,7 @@ class BudgetProvider extends ChangeNotifier {
     }
 
     await loadTransactions();
+    state.dailyAllowance = calculator.getDailyAllowance(state);
     checkAndResetForNewDay();
     notifyListeners();
   }

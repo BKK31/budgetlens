@@ -1,0 +1,14 @@
+Suppose total budget is 37933.33 for 19 days
+
+Daily Allowance = (Total Budget - Total Spent) / Days Remaining
+
+Day 1:
+- Daily Allowance = 37933.33 / 19 = 1996.49
+- After transactions: 1996.49 - 500 - 150 + 200 = 1546.49
+- Remaining for day 1: 1546.49
+
+Day 2 (midnight rollover):
+- Total Spent still = 450 (net from day 1)
+- Days Remaining = 18
+- Daily Allowance = (37933.33 - 450) / 18 = 2082.41
+- This is the new daily limit!

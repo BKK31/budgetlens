@@ -6,12 +6,17 @@ class BudgetCalculator {
   }
 
   int getDaysRemaining(BudgetState state) {
-  int days = state.budgetEndDate.difference(DateTime.now()).inDays + 2;
-  if (days <= 0) {
-    return 1;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final endDate =
+        DateTime(state.budgetEndDate.year, state.budgetEndDate.month, state.budgetEndDate.day);
+
+    int days = endDate.difference(today).inDays + 1;
+    if (days <= 0) {
+      return 1;
+    }
+    return days;
   }
-  return days;
-}
 
   double getDailyAllowance(BudgetState state) {
     double daysRemaining = getDaysRemaining(state).toDouble();
@@ -20,8 +25,7 @@ class BudgetCalculator {
   }
 
   double getRemainingToday(BudgetState state) {
-    double dailyAllowance = getDailyAllowance(state);
-    return dailyAllowance - state.todaysSpend;
+    return state.dailyAllowance - state.todaysSpend;
   }
 
   void addExpense(BudgetState state, double amount) {

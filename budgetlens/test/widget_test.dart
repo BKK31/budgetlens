@@ -7,24 +7,23 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgetlens/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App starts and shows setup screen on first launch', (WidgetTester tester) async {
+    // Set mock initial values for SharedPreferences to simulate a first launch.
+    SharedPreferences.setMockInitialValues({});
+    
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // The first screen should be a loading indicator, then the setup screen.
+    // We might need to pump a few times to get past the futures.
+    await tester.pumpAndSettle(); // pumpAndSettle will wait for all animations and futures to complete.
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the setup screen is shown.
+    expect(find.text('Setting up a budget'), findsOneWidget);
   });
 }
