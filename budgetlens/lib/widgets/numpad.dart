@@ -38,11 +38,70 @@ class _NumpadState extends State<Numpad> {
     final amount = double.tryParse(_currentInput);
     if (amount == null) return;
 
-    budgetProvider.recordTransaction(_isIncome ? -amount : amount, 'default');
-    setState(() {
-      _currentInput = '';
-      _isIncome = false;
-    });
+    final tagController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final uniqueTags = budgetProvider.uniqueTags;
+
+        return AlertDialog(
+          title: const Text('Add a tag'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: tagController,
+                  decoration:
+                      const InputDecoration(hintText: "e.g., Food, Shopping"),
+                ),
+                const SizedBox(height: 16),
+                if (uniqueTags.isNotEmpty) ...[
+                  const Text("Suggestions"),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8.0,
+                    children: uniqueTags.map((tag) {
+                      return ActionChip(
+                        label: Text(tag),
+                        onPressed: () {
+                          tagController.text = tag;
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ]
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String tag = tagController.text.trim();
+                if (tag.isEmpty) {
+                  tag = 'default';
+                }
+                budgetProvider.recordTransaction(
+                    _isIncome ? -amount : amount, tag);
+                setState(() {
+                  _currentInput = '';
+                  _isIncome = false;
+                });
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

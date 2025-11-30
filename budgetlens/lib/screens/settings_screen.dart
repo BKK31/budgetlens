@@ -1,3 +1,4 @@
+import 'package:budgetlens/screens/transactions_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
@@ -249,6 +250,19 @@ class SettingsScreen extends StatelessWidget {
                         const SizedBox(height: 32),
 
                         // 5. Settings Section
+                        ListTile(
+                          leading: const Icon(Icons.history),
+                          title: Text(
+                            'Past Transactions',
+                            style: textTheme.titleMedium?.copyWith(fontSize: 18),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const TransactionsScreen()),
+                            );
+                          },
+                        ),
                         ListTile(
                           leading: const Icon(Icons.language),
                           title: Text(
