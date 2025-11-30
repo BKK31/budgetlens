@@ -42,7 +42,7 @@ class HeaderPill extends StatelessWidget {
                 budgetProvider.state.viewMode ? 'For Today:' : 'Total Left:',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 28,
+                  fontSize: 16,
                   color: colorScheme.primary,
                 ),
               ),
@@ -50,7 +50,7 @@ class HeaderPill extends StatelessWidget {
                 '₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 28,
+                  fontSize: 16,
                   color: colorScheme.primary,
                 ),
               ),
