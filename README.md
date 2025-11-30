@@ -1,7 +1,7 @@
 # BudgetLens
 
 <p align="center">
-  <img src="assets/icon/icon.png" alt="BudgetLens Logo" width="200"/>
+  <img src="budgetlens/assets/icon/icon.png" alt="BudgetLens Logo" width="200"/>
 </p>
 
 A smart personal budgeting application that helps you manage your finances with a dynamic daily spending allowance.
