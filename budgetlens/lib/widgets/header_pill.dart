@@ -9,18 +9,50 @@ class HeaderPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<BudgetProvider>(
       builder: (context, budgetProvider, child) {
-        return FilterChip(
-          label: Text(
-            budgetProvider.state.viewMode
-                ? 'For Today: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}'
-                : 'Total Left: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
+        final colorScheme = Theme.of(context).colorScheme;
+
+        return FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: budgetProvider.state.viewMode
+                ? colorScheme.tertiaryContainer
+                : colorScheme.primaryContainer,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 17),
+            shape: const StadiumBorder(),
+            side: BorderSide(color: colorScheme.secondaryContainer, width: 2),
           ),
-          backgroundColor: budgetProvider.state.viewMode
-              ? Colors.green
-              : Colors.purple,
-          onSelected: (bool selected) {
+          onPressed: () {
             budgetProvider.switchMode();
           },
+          // child: Text(
+          //   budgetProvider.state.viewMode
+          //       ? 'For Today: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}'
+          //       : 'Total Left: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
+          //   style: TextStyle(
+          //     fontWeight: FontWeight.bold,
+          //     fontSize: 28,
+          //     color: colorScheme.primary,
+          //   ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                budgetProvider.state.viewMode ? 'For Today:' : 'Total Left:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  color: colorScheme.primary,
+                ),
+              ),
+              Text(
+                '₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
