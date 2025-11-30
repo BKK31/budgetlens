@@ -10,6 +10,9 @@ class HeaderPill extends StatelessWidget {
     return Consumer<BudgetProvider>(
       builder: (context, budgetProvider, child) {
         final colorScheme = Theme.of(context).colorScheme;
+        print('DEBUG: daysRemaining = ${budgetProvider.daysRemaining}');
+        print('DEBUG: remainingBudget = ${budgetProvider.remainingBudget}');
+        print('DEBUG: dailyAllowance = ${budgetProvider.dailyAllowance}');
 
         return FilledButton(
           style: FilledButton.styleFrom(

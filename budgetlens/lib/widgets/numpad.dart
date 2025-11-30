@@ -1,22 +1,218 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
-import '../models.dart';
 
-class Numpad extends StatefulWidget{
+class Numpad extends StatefulWidget {
   const Numpad({super.key});
 
   @override
   State<Numpad> createState() => _NumpadState();
 }
 
-class _NumpadState extends State<Numpad>{
-  String currentInput = '';
-  String selectedTag = '';
+class _NumpadState extends State<Numpad> {
+  String _currentInput = '';
+  bool _isIncome = false;
+
+  void _handleTap(String value) {
+    setState(() {
+      _currentInput += value;
+    });
+  }
+
+  void _handleBackspace() {
+    if (_currentInput.isNotEmpty) {
+      setState(() {
+        _currentInput = _currentInput.substring(0, _currentInput.length - 1);
+      });
+    }
+  }
+
+  void _toggleSign() {
+    setState(() {
+      _isIncome = !_isIncome;
+    });
+  }
+
+  void _handleConfirm(BudgetProvider budgetProvider) {
+    if (_currentInput.isEmpty) return;
+    final amount = double.tryParse(_currentInput);
+    if (amount == null) return;
+
+    budgetProvider.recordTransaction(_isIncome ? -amount : amount, 'default');
+    setState(() {
+      _currentInput = '';
+      _isIncome = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return Container();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Display
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          alignment: Alignment.centerRight,
+          child: Text(
+            '${_isIncome ? '-' : ''}₹${_currentInput.isEmpty ? '0' : _currentInput}',
+            style: TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: _isIncome ? colorScheme.error : colorScheme.primary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        // Numpad
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                  // Number grid (7, 8, 9, 4, 5, 6, 1, 2, 3, 0, .)
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        _buildNumberRow(['7', '8', '9']),
+                        _buildNumberRow(['4', '5', '6']),
+                        _buildNumberRow(['1', '2', '3']),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _NumpadButton(
+                                  text: '0',
+                                  onPressed: () => _handleTap('0'),
+                                ),
+                              ),
+                              Expanded(
+                                child: _NumpadButton(
+                                  text: '.',
+                                  onPressed: () {
+                                    if (!_currentInput.contains('.')) {
+                                      _handleTap('.');
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Operations column (backspace, minus, check)
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: _NumpadButton(
+                            icon: Icons.backspace_outlined,
+                            onPressed: _handleBackspace,
+                            color: colorScheme.tertiary,
+                          ),
+                        ),
+                        Expanded(
+                          child: _NumpadButton(
+                            text: '-',
+                            onPressed: _toggleSign,
+                            color: colorScheme.tertiary,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: _NumpadButton(
+                            icon: Icons.check,
+                            onPressed: () =>
+                                _handleConfirm(context.read<BudgetProvider>()),
+                            color: colorScheme.primary,
+                            isElevated: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNumberRow(List<String> numbers) {
+    return Expanded(
+      child: Row(
+        children: numbers
+            .map(
+              (number) => Expanded(
+                child: _NumpadButton(
+                  text: number,
+                  onPressed: () => _handleTap(number),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _NumpadButton extends StatelessWidget {
+  final String? text;
+  final IconData? icon;
+  final VoidCallback onPressed;
+  final Color? color;
+  final bool isElevated;
+
+  const _NumpadButton({
+    this.text,
+    this.icon,
+    required this.onPressed,
+    this.color,
+    this.isElevated = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final buttonStyle = ButtonStyle(
+      shape: WidgetStateProperty.all(const StadiumBorder()),
+      padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
+      backgroundColor: WidgetStateProperty.all(
+        isElevated
+            ? color
+            : (color?.withOpacity(0.1) ?? colorScheme.secondaryContainer),
+      ),
+      foregroundColor: WidgetStateProperty.all(
+        isElevated ? colorScheme.onPrimary : color ?? colorScheme.onSurface,
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: TextButton(
+        onPressed: onPressed,
+        style: buttonStyle,
+        child: Center(
+          child: text != null
+              ? Text(
+                  text!,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : Icon(icon, size: 24),
+        ),
+      ),
+    );
   }
 }

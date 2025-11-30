@@ -5,6 +5,7 @@ class BudgetState{
   DateTime budgetStartDate = DateTime.now();
   DateTime budgetEndDate = DateTime.now();
   double todaysSpend = 0.0;
+  int lastTransactionDay = DateTime.now().day;
 }
 
 class Transaction{

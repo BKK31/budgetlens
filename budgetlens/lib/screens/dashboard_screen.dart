@@ -1,3 +1,5 @@
+import 'package:budgetlens/screens/settings_screen.dart';
+import 'package:budgetlens/widgets/numpad.dart';
 import 'package:flutter/material.dart';
 import '../widgets/display_amount.dart';
 import '../widgets/header_pill.dart';
@@ -19,7 +21,11 @@ class DashboardScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   IconButton(
                     onPressed: () {
-                      // TODO: Add settings
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SettingsScreen()),
+                      );
                     },
                     icon: const Icon(Icons.settings),
                     iconSize: 40,
@@ -28,6 +34,11 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const DisplayAmount(),
+            const Spacer(),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.60,
+              child: const Numpad(),
+            ),
           ],
         ),
       ),

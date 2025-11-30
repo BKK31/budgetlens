@@ -1,37 +1,40 @@
 import 'models.dart';
 
-class BudgetCalculator{
-  double getRemainingBudget(BudgetState state){
-  return state.totalBudget - state.totalSpent;
+class BudgetCalculator {
+  double getRemainingBudget(BudgetState state) {
+    return state.totalBudget - state.totalSpent;
   }
-  int getDaysRemaining(BudgetState state){
-    int days = state.budgetEndDate.difference(DateTime.now()).inDays;
-    if(days <= 0){
-      return 1;
-    }
-    return days;
+
+  int getDaysRemaining(BudgetState state) {
+  int days = state.budgetEndDate.difference(DateTime.now()).inDays + 2;
+  if (days <= 0) {
+    return 1;
   }
-  double getDailyAllowance(BudgetState state){
+  return days;
+}
+
+  double getDailyAllowance(BudgetState state) {
     double daysRemaining = getDaysRemaining(state).toDouble();
     double remainingBudget = getRemainingBudget(state);
     return remainingBudget / daysRemaining;
   }
-  double getRemainingToday(BudgetState state){
+
+  double getRemainingToday(BudgetState state) {
     double dailyAllowance = getDailyAllowance(state);
-    double todaysSpend = state.todaysSpend;
-    return dailyAllowance - todaysSpend;
+    return dailyAllowance - state.todaysSpend;
   }
-  void addExpense(BudgetState state, double amount){
+
+  void addExpense(BudgetState state, double amount) {
     state.totalSpent += amount;
     state.todaysSpend += amount;
-    return;
   }
-  void addIncome(BudgetState state, double amount){
+
+  void addIncome(BudgetState state, double amount) {
     state.totalSpent -= amount;
     state.todaysSpend -= amount;
-    return;
   }
-  bool switchMode(BudgetState state){
+
+  bool switchMode(BudgetState state) {
     state.viewMode = !state.viewMode;
     return state.viewMode;
   }
