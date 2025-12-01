@@ -92,7 +92,7 @@ class BudgetProvider extends ChangeNotifier {
     state.todaysSpend = 0.0;
     state.lastTransactionDay = DateTime.now().day;
     transactions.clear();
-    // state.dailyAllowance = calculator.getDailyAllowance(state);
+    state.dailyAllowance = calculator.getDailyAllowance(state);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('totalBudget', budget);
@@ -162,7 +162,7 @@ class BudgetProvider extends ChangeNotifier {
     }
 
     await loadTransactions();
-    // state.dailyAllowance = calculator.getDailyAllowance(state);
+    state.dailyAllowance = calculator.getDailyAllowance(state);
     checkAndResetForNewDay();
     notifyListeners();
   }
