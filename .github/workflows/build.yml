@@ -3,12 +3,17 @@ name: Build APK
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # This fixes your "Get dependencies" error by setting the folder for all commands
+    defaults:
+      run:
+        working-directory: ./budgetlens
 
     steps:
       - uses: actions/checkout@v3
@@ -17,29 +22,25 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
           cache: true
-
-      - name: Show directory structure (debug)
-        run: ls -R .
+          # Fixes the cache issue by pointing to the correct lock file
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles(''budgetlens/pubspec.lock'') }}'
 
       - name: Get dependencies
-        working-directory: ./budgetlens
         run: flutter pub get
 
       - name: Build APK
-        working-directory: ./budgetlens
         run: flutter build apk --release
 
-      - name: Upload APK to Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+      # This uploads the APK so you can download it from the GitHub Website
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: ./budgetlens/build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: release-apk
+          path: budgetlens/build/app/outputs/flutter-apk/app-release.apk
