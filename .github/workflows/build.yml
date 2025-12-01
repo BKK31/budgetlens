@@ -25,16 +25,24 @@ jobs:
           flutter-version: '3.16.0'
           cache: true
 
+      - name: Show directory structure (debug)
+        run: ls -R .
+
       - name: Get dependencies
-        working-directory: budgetlens
+        working-directory: ./budgetlens
         run: flutter pub get
 
       - name: Build APK
-        working-directory: budgetlens
+        working-directory: ./budgetlens
         run: flutter build apk --release
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: budgetlens/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: budgetlens/build/app/outputs/flutter-apk/app-release.apk
