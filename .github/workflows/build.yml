@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: ./budgetlens
@@ -25,7 +24,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'master' # FIX: Use the master channel to match your code requirements
+          channel: 'beta' # CHANGED: switched from 'master' to 'beta'
           cache: true
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles(''budgetlens/pubspec.lock'') }}'
 
