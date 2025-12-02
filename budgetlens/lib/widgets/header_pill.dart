@@ -12,9 +12,7 @@ class HeaderPill extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
         return FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: budgetProvider.state.viewMode
-                ? colorScheme.tertiaryContainer
-                : colorScheme.primaryContainer,
+            backgroundColor: Colors.green,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 17),
             shape: const StadiumBorder(),
             side: BorderSide(color: colorScheme.secondaryContainer, width: 2),
@@ -27,18 +25,18 @@ class HeaderPill extends StatelessWidget {
             children: [
               Text(
                 budgetProvider.state.viewMode ? 'For Today:' : 'Total Left:',
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: colorScheme.primary,
+                  color: Colors.black,
                 ),
               ),
               Text(
-                '₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
-                style: TextStyle(
+                '₹${budgetProvider.projectedDisplayAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: colorScheme.primary,
+                  color: Colors.black,
                 ),
               ),
             ],

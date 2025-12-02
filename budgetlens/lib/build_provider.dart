@@ -7,7 +7,11 @@ import 'calculator.dart';
 class BudgetProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
   final BudgetState state = BudgetState();
+  final BudgetState state = BudgetState();
   final BudgetCalculator calculator = BudgetCalculator();
+
+  double _previewAmount = 0.0;
+  bool _previewIsIncome = false;
 
   void checkAndResetForNewDay() {
     final today = DateTime.now().day;
@@ -40,6 +44,12 @@ class BudgetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updatePreview(double amount, bool isIncome) {
+    _previewAmount = amount;
+    _previewIsIncome = isIncome;
+    notifyListeners();
+  }
+
   void switchMode() {
     calculator.switchMode(state);
     notifyListeners();
@@ -52,6 +62,14 @@ class BudgetProvider extends ChangeNotifier {
     } else {
       return calculator.getRemainingBudget(state);
     }
+  }
+
+  double get projectedDisplayAmount {
+    double currentAmount = displayAmount;
+    if (_previewAmount == 0) return currentAmount;
+
+    double change = _previewIsIncome ? _previewAmount : -_previewAmount;
+    return currentAmount + change;
   }
 
   int get daysRemaining {

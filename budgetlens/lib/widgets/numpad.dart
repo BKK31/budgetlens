@@ -17,6 +17,7 @@ class _NumpadState extends State<Numpad> {
     setState(() {
       _currentInput += value;
     });
+    _updatePreview();
   }
 
   void _handleBackspace() {
@@ -24,6 +25,7 @@ class _NumpadState extends State<Numpad> {
       setState(() {
         _currentInput = _currentInput.substring(0, _currentInput.length - 1);
       });
+      _updatePreview();
     }
   }
 
@@ -31,6 +33,12 @@ class _NumpadState extends State<Numpad> {
     setState(() {
       _isIncome = !_isIncome;
     });
+    _updatePreview();
+  }
+
+  void _updatePreview() {
+    final amount = double.tryParse(_currentInput) ?? 0.0;
+    context.read<BudgetProvider>().updatePreview(amount, _isIncome);
   }
 
   void _handleConfirm(BudgetProvider budgetProvider) {
@@ -90,6 +98,7 @@ class _NumpadState extends State<Numpad> {
                 }
                 budgetProvider.recordTransaction(
                     _isIncome ? -amount : amount, tag);
+                budgetProvider.updatePreview(0, false);
                 setState(() {
                   _currentInput = '';
                   _isIncome = false;
