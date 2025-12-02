@@ -3,19 +3,11 @@ name: Build APK
 on:
   push:
     branches: [ main ]
-    tags:
-      - 'v*' # Triggers on version tags (e.g., v1.0.0)
-  # Allows manual run from Actions tab
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # Sets the default folder for all commands to your project subfolder
     defaults:
       run:
         working-directory: ./budgetlens
@@ -32,23 +24,21 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Using Beta to satisfy your project's newer Dart SDK requirement
           channel: 'beta'
           cache: true
-          # Fixes cache issues by pointing to the correct lockfile path
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles(''budgetlens/pubspec.lock'') }}'
 
       - name: Get dependencies
         run: flutter pub get
 
       # STEP 1: Decode the Keystore
-      # Converts the Base64 secret back into a file: android/app/upload-keystore.jks
+      # Takes your huge Base64 string and turns it into a file called upload-keystore.jks
       - name: Decode Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
       # STEP 2: Build APK with Secrets
-      # Passes the secrets as Environment Variables to Gradle
+      # We map your GitHub Secrets to the Environment Variables the Gradle file looks for
       - name: Build APK
         env:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -57,18 +47,8 @@ jobs:
           STORE_FILE: upload-keystore.jks
         run: flutter build apk --release
 
-      # STEP 3: Upload Artifact (Downloadable from GitHub Actions tab)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: budgetlens/build/app/outputs/flutter-apk/app-release.apk
-
-      # STEP 4: Create Release (Only runs if you push a tag like v1.0)
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: budgetlens/build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
