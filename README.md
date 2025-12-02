@@ -173,4 +173,4 @@ Distributed under the GNU General Public License v3.0. See LICENSE for more deta
  * The Open-source community ❤️
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-[<img alt='Get it on GitHub' height="60" src='/screenshots/en/get-it-on-github.png' />](https://github.com/bkk31/budgetlens/releases)
+[<img alt='Get it on GitHub' height="60" src='budgetlens/assets/icon/get-it-on-github.png' />](https://github.com/bkk31/budgetlens/releases)
