@@ -1,94 +1,174 @@
 # BudgetLens
 
-<p align="center">
-  <img src="budgetlens/assets/icon/icon.png" alt="BudgetLens Logo" width="200"/>
-</p>
+<a id="readme-top"></a>
 
-A smart personal budgeting application that helps you manage your finances with a dynamic daily spending allowance.
+<br />
+<div align="center">
+  <a href="https://github.com/bkk31/budgetlens">
+    <img src="budgetlens/assets/icon/icon.png" alt="Logo" width="120" height="120">
+  </a>
+  <h3 align="center">BudgetLens</h3>
+  <p align="center">
+    A smart personal budgeting application with a dynamic daily spending allowance.
+    <br />
+    <a href="https://github.com/bkk31/budgetlens"><strong>Explore the docs »</strong></a>
+    <br /><br />
+    <a href="https://github.com/bkk31/budgetlens">View Demo</a>
+    &middot;
+    <a href="https://github.com/bkk31/budgetlens/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    &middot;
+    <a href="https://github.com/bkk31/budgetlens/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+</div>
+
+## 📖 Table of Contents
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#features">Features</a>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#project-structure">Project Structure</a></li>
+    <li><a href="#dependencies">Dependencies</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
+
+## 💡 About The Project
+
+BudgetLens is a mobile budgeting application, built with **Flutter**, designed to help users manage their finances using a **dynamic daily spending allowance**.
+
+Instead of a rigid, fixed daily budget, BudgetLens calculates your allowance by dividing your **remaining budget** by the **number of days left** in the budget cycle. This means:
+* **Spend less today** → your allowance automatically increases tomorrow.
+* **Spend more today** → your allowance is adjusted downwards for the rest of the period.
+
+This flexible and intuitive approach encourages healthier budgeting habits and provides real-time accountability. All financial data is stored **locally** on your device, ensuring complete **privacy** and user control.
+
+Inspired by Buckwheat.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
-## About The Project
+## 🛠️ Built With
 
-BudgetLens is a mobile application built with Flutter that provides a simple yet effective way to manage your budget. Unlike traditional budgeting apps where you have a fixed daily limit, BudgetLens calculates a dynamic daily spending allowance.
+* ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) 
+* ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
 
-The core idea is to divide your remaining budget by the number of days left in your budget period. This means your daily allowance is automatically adjusted based on your spending habits. If you spend less one day, you'll have more to spend on the following days, and vice versa. This provides a more flexible and realistic approach to budgeting.
-
-All your data is stored locally on your device, ensuring your financial information remains private and secure.
-
-This project was inspired by [Buckwheat](https://github.com/danilkinkin/buckwheat).
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
-## Features
+## ✨ Features
 
-- **Dynamic Daily Allowance:** Automatically calculates and updates your daily spending limit.
-- **Initial Setup:** A simple setup screen to define your total budget and budget period.
-- **Dashboard:** A clear and concise dashboard that displays your key budget information, including your daily allowance and remaining budget.
-- **Transaction Logging:** Easily add expenses and income using a user-friendly interface.
-- **Transaction History:** View a list of all your past transactions.
-- **Local Data Storage:** All your data is stored securely on your device.
-- **Dynamic Theming:** The app's color scheme adapts to your system's theme for a native look and feel (on supported platforms).
+* **Dynamic Daily Allowance** – Automatically updated based on remaining funds and days left in the budget cycle.
+* **Initial Setup Flow** – Easy guided setup to define your total budget and budgeting period (e.g., monthly).
+* **Dashboard** – Clean, intuitive overview providing key budget metrics at a glance.
+* **Transaction Logging** – Effortlessly add income or expenses.
+* **Transaction History** – Review and track all past entries easily.
+* **Local Data Storage** – All financial data is saved securely on your device, ensuring privacy.
+* **Dynamic Theming** – Adapts to the device's system theme and colors for a native feel (where supported).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-To get a local copy up and running, follow these simple steps.
+Follow these simple instructions to set up and run BudgetLens locally.
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install)
-- A code editor like [VS Code](https://code.visualstudio.com/) with the [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter).
+* **Flutter SDK** → [Installation Guide](https://flutter.dev/docs/get-started/install)
+* A code editor like **Visual Studio Code** with the **Flutter extension**.
 
 ### Installation
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/bkk31/budgetlens.git
-   ```
-2. Navigate to the project directory
-   ```sh
-   cd budgetlens/budgetlens
-   ```
-3. Install dependencies
-   ```sh
-   flutter pub get
-   ```
-4. Run the app
-   ```sh
-   flutter run
-   ```
+1.  Clone the repository:
+    ```bash
+    git clone [https://github.com/bkk31/budgetlens.git](https://github.com/bkk31/budgetlens.git)
+    ```
+
+2.  Navigate into the project folder:
+    ```bash
+    cd budgetlens/budgetlens
+    ```
+
+3.  Install dependencies:
+    ```bash
+    flutter pub get
+    ```
+
+4.  Run the app on a connected device or emulator:
+    ```bash
+    flutter run
+    ```
+
+5.  (Optional) Build the release APK:
+    ```bash
+    flutter build apk --release
+    ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
-The project is structured with a clear separation of concerns, making it easy to understand and maintain.
+```bash
+budgetlens/
+ ├── lib/
+ │   ├── main.dart                # App entry point and root widget
+ │   ├── build_provider.dart      # State management configuration using Provider
+ │   ├── calculator.dart          # Core dynamic budgeting logic and calculations
+ │   ├── models.dart              # Data models (e.g., Transaction, Budget)
+ │   ├── screens/                 # Major UI screens (Dashboard, Setup, History)
+ │   └── widgets/                 # Reusable UI components
+ ├── assets/                      # Application assets (icons, images)
+ └── pubspec.yaml                 # Dependencies and project metadata
+```
 
-- `lib/`: Contains the main Dart code for the application.
-  - `main.dart`: The entry point of the application.
-  - `build_provider.dart`: The central state management hub using the `provider` package.
-  - `calculator.dart`: Contains the core budgeting calculation logic.
-  - `models.dart`: Defines the data structures for the application.
-  - `screens/`: Contains the files for the primary UI screens (Dashboard, Setup, etc.).
-  - `widgets/`: Contains reusable UI components.
-- `assets/`: Contains the application's assets, such as icons.
-- `pubspec.yaml`: Defines the project's dependencies and metadata.
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
-## Dependencies
-
-The main dependencies used in this project are:
-
-- `flutter`: The UI framework.
-- `provider`: For state management.
-- `shared_preferences`: For local data persistence.
-- `dynamic_system_colors`: For dynamic UI theming.
-
+## 📦 Dependencies
+### Core packages:
+ * flutter – The main UI framework.
+ * provider – For robust and simple state management across the app.
+ * shared_preferences – Used for local, persistent data storage on the device.
+ * dynamic_system_colors – Provides support for system-adaptive theming.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
-## License
+## 📜 License
+Distributed under the GNU General Public License v3.0. See LICENSE for more details.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+---
 
-Distributed under the GNU General Public License v3.0. See `LICENSE` for more information.
+### ✉️ Contact
+ * Bhargava K K — bkk31
+ * Email - bhargavakk13@gmail.com
+ * Project Link: https://github.com/bkk31/budgetlens
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+---
+
+### 🙏 Acknowledgments
+ * Inspired by: https://github.com/danilkinkin/buckwheat
+ * The Flutter & Dart teams
+ * The Open-source community ❤️
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
