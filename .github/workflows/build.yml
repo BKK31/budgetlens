@@ -24,14 +24,27 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'beta' # CHANGED: switched from 'master' to 'beta'
+          channel: 'beta'
           cache: true
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles(''budgetlens/pubspec.lock'') }}'
 
       - name: Get dependencies
         run: flutter pub get
 
+      # NEW STEP 1: Decode the Keystore File
+      # This takes your BASE64 secret and saves it as 'upload-keystore.jks' inside android/app/
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      # UPDATED STEP 2: Build with Secrets
+      # We pass the secrets as environment variables (env) so build.gradle can read them
       - name: Build APK
+        env:
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          STORE_FILE: upload-keystore.jks
         run: flutter build apk --release
 
       - name: Upload APK Artifact
