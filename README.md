@@ -79,7 +79,7 @@ Inspired by Buckwheat.
 * **Dynamic Daily Allowance** – Automatically updated based on remaining funds and days left in the budget cycle.
 * **Initial Setup Flow** – Easy guided setup to define your total budget and budgeting period (e.g., monthly).
 * **Dashboard** – Clean, intuitive overview providing key budget metrics at a glance.
-* **Transaction Logging** – Effortlessly add income or expenses.
+* **Transaction Logging** – Effortlessly add income (can be added by using minus sign) or expenses.
 * **Transaction History** – Review and track all past entries easily.
 * **Local Data Storage** – All financial data is saved securely on your device, ensuring privacy.
 * **Dynamic Theming** – Adapts to the device's system theme and colors for a native feel (where supported).
