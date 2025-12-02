@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
-import '../models.dart';
 
 class TransactionsScreen extends StatelessWidget {
   const TransactionsScreen({super.key});

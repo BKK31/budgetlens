@@ -11,11 +11,22 @@ class BudgetProvider extends ChangeNotifier {
 
   void checkAndResetForNewDay() {
     final today = DateTime.now().day;
+
     if (today != state.lastTransactionDay) {
+      // New day - reset
       state.todaysSpend = 0.0;
       state.lastTransactionDay = today;
-      state.dailyAllowance = calculator.getDailyAllowance(state);
-      notifyListeners();
+    } else {
+      // Same day - recalculate from today's transactions
+      final now = DateTime.now();
+      state.todaysSpend = transactions
+          .where(
+            (t) =>
+                t.datetime.day == now.day &&
+                t.datetime.month == now.month &&
+                t.datetime.year == now.year,
+          )
+          .fold(0, (sum, t) => sum + t.amount);
     }
   }
 
@@ -131,19 +142,6 @@ class BudgetProvider extends ChangeNotifier {
       }).toList();
 
       state.totalSpent = transactions.fold(0, (sum, t) => sum + t.amount);
-
-      // Calculate today's spend
-      final today = DateTime.now();
-      state.todaysSpend = transactions
-          .where(
-            (t) =>
-                t.datetime.day == today.day &&
-                t.datetime.month == today.month &&
-                t.datetime.year == today.year,
-          )
-          .fold(0, (sum, t) => sum + t.amount);
-
-      state.lastTransactionDay = today.day;
     }
     notifyListeners();
   }
@@ -152,8 +150,7 @@ class BudgetProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final savedBudget = prefs.getDouble('totalBudget');
     final savedStartDate = prefs.getString('startDate');
-    final savedEndDate =
-        prefs.getString('endDate');
+    final savedEndDate = prefs.getString('endDate');
 
     if (savedBudget != null && savedStartDate != null && savedEndDate != null) {
       state.totalBudget = savedBudget;
@@ -162,7 +159,6 @@ class BudgetProvider extends ChangeNotifier {
     }
 
     await loadTransactions();
-    state.dailyAllowance = calculator.getDailyAllowance(state);
     checkAndResetForNewDay();
     notifyListeners();
   }

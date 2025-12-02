@@ -10,10 +10,6 @@ class HeaderPill extends StatelessWidget {
     return Consumer<BudgetProvider>(
       builder: (context, budgetProvider, child) {
         final colorScheme = Theme.of(context).colorScheme;
-        print('DEBUG: daysRemaining = ${budgetProvider.daysRemaining}');
-        print('DEBUG: remainingBudget = ${budgetProvider.remainingBudget}');
-        print('DEBUG: dailyAllowance = ${budgetProvider.dailyAllowance}');
-
         return FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: budgetProvider.state.viewMode
@@ -26,15 +22,6 @@ class HeaderPill extends StatelessWidget {
           onPressed: () {
             budgetProvider.switchMode();
           },
-          // child: Text(
-          //   budgetProvider.state.viewMode
-          //       ? 'For Today: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}'
-          //       : 'Total Left: ₹${budgetProvider.displayAmount.toStringAsFixed(2)}',
-          //   style: TextStyle(
-          //     fontWeight: FontWeight.bold,
-          //     fontSize: 28,
-          //     color: colorScheme.primary,
-          //   ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
