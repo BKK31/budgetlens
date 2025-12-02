@@ -188,4 +188,86 @@ class BudgetProvider extends ChangeNotifier {
     final budget = prefs.getDouble('totalBudget');
     print('DEBUG: totalBudget = $budget');
   }
+
+  Future<void> updateBudgetSetup(
+    double newBudget,
+    DateTime newStartDate,
+    DateTime newEndDate,
+  ) async {
+    state.totalBudget = newBudget;
+    state.budgetStartDate = newStartDate;
+    state.budgetEndDate = newEndDate;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('totalBudget', newBudget);
+    await prefs.setString('startDate', newStartDate.toString());
+    await prefs.setString('endDate', newEndDate.toString());
+
+    notifyListeners();
+  }
+
+  Future<String> createBackup() async {
+    final Map<String, dynamic> backupData = {
+      'totalBudget': state.totalBudget,
+      'startDate': state.budgetStartDate.toString(),
+      'endDate': state.budgetEndDate.toString(),
+      'transactions': transactions.map((t) {
+        return {
+          'amount': t.amount,
+          'tag': t.tag,
+          'datetime': t.datetime.toString(),
+        };
+      }).toList(),
+    };
+    return jsonEncode(backupData);
+  }
+
+  Future<void> restoreBackup(String jsonString) async {
+    try {
+      final Map<String, dynamic> decoded = jsonDecode(jsonString);
+
+      // Validate required fields
+      if (!decoded.containsKey('totalBudget') ||
+          !decoded.containsKey('startDate') ||
+          !decoded.containsKey('endDate') ||
+          !decoded.containsKey('transactions')) {
+        throw Exception('Invalid backup file format');
+      }
+
+      final newBudget = decoded['totalBudget'] as double;
+      final newStartDate = DateTime.parse(decoded['startDate'] as String);
+      final newEndDate = DateTime.parse(decoded['endDate'] as String);
+      final List<dynamic> newTransactionsJson = decoded['transactions'];
+
+      final newTransactions = newTransactionsJson.map((t) {
+        return Transaction(
+          t['amount'] as double,
+          t['tag'] as String,
+          DateTime.parse(t['datetime'] as String),
+        );
+      }).toList();
+
+      // Save everything
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('totalBudget', newBudget);
+      await prefs.setString('startDate', newStartDate.toString());
+      await prefs.setString('endDate', newEndDate.toString());
+      
+      // Save transactions directly
+      final transactionData = newTransactions.map((t) {
+        return {
+          'amount': t.amount,
+          'tag': t.tag,
+          'datetime': t.datetime.toString(),
+        };
+      }).toList();
+      await prefs.setString('transactions', jsonEncode(transactionData));
+      
+      // Mark launch complete just in case
+      await markLaunchComplete();
+
+    } catch (e) {
+      print('Error restoring backup: $e');
+      rethrow;
+    }
+  }
 }

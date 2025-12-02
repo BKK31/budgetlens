@@ -39,17 +39,20 @@ android {
         versionName = flutter.versionName
     }
 
-        signingConfigs {
+    signingConfigs {
         create("release") {
-            // The ?: operator ensures we never get a NULL crash
-            keyAlias = System.getenv("KEY_ALIAS") ?: "androiddebugkey"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
-            storePassword = System.getenv("STORE_PASSWORD") ?: "android"
+            keyAlias = keystoreProperties["keyAlias"] as String? ?: System.getenv("KEY_ALIAS")
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: System.getenv("KEY_PASSWORD")
+            storePassword = keystoreProperties["storePassword"] as String? ?: System.getenv("STORE_PASSWORD")
             
-            // Safe file loading
-            val storeFileEnv = System.getenv("STORE_FILE")
-            if (storeFileEnv != null) {
-                storeFile = file(storeFileEnv)
+            val storeFileProp = keystoreProperties["storeFile"] as String?
+            if (storeFileProp != null) {
+                storeFile = file(storeFileProp)
+            } else {
+                val storeFileEnv = System.getenv("STORE_FILE")
+                if (storeFileEnv != null) {
+                    storeFile = file(storeFileEnv)
+                }
             }
         }
     }
