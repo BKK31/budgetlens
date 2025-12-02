@@ -7,7 +7,7 @@ import 'calculator.dart';
 class BudgetProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
   final BudgetState state = BudgetState();
-  final BudgetState state = BudgetState();
+
   final BudgetCalculator calculator = BudgetCalculator();
 
   double _previewAmount = 0.0;
