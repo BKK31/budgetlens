@@ -15,7 +15,11 @@ class _NumpadState extends State<Numpad> {
 
   void _handleTap(String value) {
     setState(() {
-      _currentInput += value;
+      if(_currentInput =='0' && value !='.'){
+        _currentInput = value;
+      }else{
+        _currentInput += value;
+      }
     });
     _updatePreview();
   }
