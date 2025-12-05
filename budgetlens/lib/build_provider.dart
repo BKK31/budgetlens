@@ -159,7 +159,7 @@ class BudgetProvider extends ChangeNotifier {
         );
       }).toList();
 
-      state.totalSpent = transactions.fold(0, (sum, t) => sum + t.amount);
+      recalculateTotalSpent();
     }
     notifyListeners();
   }
@@ -269,5 +269,45 @@ class BudgetProvider extends ChangeNotifier {
       print('Error restoring backup: $e');
       rethrow;
     }
+  }
+
+  // Check if Budget is expired
+  bool get isBudgetExpired{
+    final now = DateTime.now();
+
+    final today = DateTime(now.year, now.month, now.day);
+
+    final end = DateTime(state.budgetEndDate.year, state.budgetEndDate.month, state.budgetEndDate.day);
+
+    return today.isAfter(end);
+  }
+
+  // Recalculate Total Spent
+  void recalculateTotalSpent(){
+    state.totalSpent = transactions.where((t) => t.datetime.isAfter(state.budgetStartDate) || t.datetime.isAtSameMomentAs(state.budgetStartDate)).fold(0,(sum,t) => sum + t.amount);
+    notifyListeners();
+  }
+
+  // Extend Budget
+  Future<void> extendBudget(DateTime newEndDate) async {
+    await updateBudgetSetup(state.totalBudget, state.budgetStartDate, newEndDate);
+  }
+
+  // Rollover the remaining amount from budget
+  Future<void> rolloverBudget(double additionalAmount, DateTime newEndDate) async {
+    // Calculate remaining amount
+    double remaining = calculator.getRemainingBudget(state);
+
+    // Calculate new total budget
+    double newTotal = remaining + additionalAmount;
+
+    // Set new start date
+    DateTime newStart = DateTime.now();
+
+    // Update budget
+    await updateBudgetSetup(newTotal, newStart, newEndDate);
+
+    // Recalculate spent amount
+    recalculateTotalSpent();
   }
 }
