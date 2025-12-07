@@ -32,7 +32,7 @@ dependencies:
     sdk: flutter
   provider: ^6.0.0
   shared_preferences: ^2.0.0
-  dynamic_system_colors: ^1.8.0
+  dynamic_color: ^1.7.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -98,13 +98,5 @@ flutter:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true
   image_path: "assets/icon/icon.png"
   adaptive_icon_monochrome: "assets/icon/monochrome_icon.png"
-  windows:
-    generate: true
-    image_path: "assets/icon/icon.png"
-    icon_size: 48
-  macos:
-    generate: true
-    image_path: "assets/icon/icon.png"
