@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
 import '../models.dart';
@@ -9,16 +10,12 @@ class TransactionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Past Transactions'),
-      ),
+      appBar: AppBar(title: const Text('Past Transactions')),
       body: Consumer<BudgetProvider>(
         builder: (context, budgetProvider, child) {
           final transactions = budgetProvider.transactions.reversed.toList();
           if (transactions.isEmpty) {
-            return const Center(
-              child: Text('No transactions yet.'),
-            );
+            return const Center(child: Text('No transactions yet.'));
           }
 
           final grouped = groupTransactionsByMonth(transactions);
@@ -35,9 +32,9 @@ class TransactionsScreen extends StatelessWidget {
                     child: Text(
                       monthKey,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
                   ...monthTransactions.map((transaction) {
@@ -45,16 +42,20 @@ class TransactionsScreen extends StatelessWidget {
                     return ListTile(
                       leading: isExpense
                           ? const Icon(Icons.arrow_upward, color: Colors.red)
-                          : const Icon(Icons.arrow_downward,
-                              color: Colors.green),
+                          : const Icon(
+                              Icons.arrow_downward,
+                              color: Colors.green,
+                            ),
                       title: Text(
                         '₹${transaction.amount.abs().toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(transaction.tag),
                       trailing: Text(
-                        '${transaction.datetime.day}',
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        DateFormat(
+                          'MMM d, h:mm a',
+                        ).format(transaction.datetime),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     );
                   }),
@@ -69,7 +70,8 @@ class TransactionsScreen extends StatelessWidget {
 
   // Add grouping transactions by Month
   Map<String, List<Transaction>> groupTransactionsByMonth(
-      List<Transaction> transactions) {
+    List<Transaction> transactions,
+  ) {
     final Map<String, List<Transaction>> grouped = {};
 
     for (var transaction in transactions) {
@@ -97,7 +99,7 @@ class TransactionsScreen extends StatelessWidget {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
 
     return months[month - 1];

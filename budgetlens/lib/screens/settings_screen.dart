@@ -407,21 +407,25 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              final jsonString =
-                                  await budgetProvider.createBackup();
-                              final directory =
-                                  await getTemporaryDirectory();
+                              final jsonString = await budgetProvider
+                                  .createBackup();
+                              final directory = await getTemporaryDirectory();
                               final file = File(
-                                  '${directory.path}/budget_lens_backup.json');
-                              await file.writeAsString(jsonString);
-                              await Share.shareXFiles([XFile(file.path)],
-                                  text: 'Budget Lens Backup');
+                                '${directory.path}/budget_lens_backup.json',
+                              );
+                              if (await file.exists()) {
+                                await file.delete();
+                              }
+                              await file.writeAsString(jsonString, flush: true);
+                              await Share.shareXFiles([
+                                XFile(file.path),
+                              ], text: 'Budget Lens Backup');
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content:
-                                          Text('Error creating backup: $e')),
+                                    content: Text('Error creating backup: $e'),
+                                  ),
                                 );
                               }
                             }
@@ -437,11 +441,12 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType.custom,
-                                allowedExtensions: ['json'],
-                              );
+                              FilePickerResult? result = await FilePicker
+                                  .platform
+                                  .pickFiles(
+                                    type: FileType.custom,
+                                    allowedExtensions: ['json'],
+                                  );
 
                               if (result != null) {
                                 File file = File(result.files.single.path!);
@@ -455,7 +460,8 @@ class SettingsScreen extends StatelessWidget {
                                     builder: (context) => AlertDialog(
                                       title: const Text('Restore Successful'),
                                       content: const Text(
-                                          'App needs to restart to apply changes.'),
+                                        'App needs to restart to apply changes.',
+                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
@@ -472,8 +478,8 @@ class SettingsScreen extends StatelessWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content:
-                                          Text('Error restoring backup: $e')),
+                                    content: Text('Error restoring backup: $e'),
+                                  ),
                                 );
                               }
                             }
