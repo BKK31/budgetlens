@@ -1,132 +1,114 @@
 # BudgetLens
 
-<a id="readme-top"></a>
+<p align="center">
+  <img src="budgetlens/assets/icon/icon.png" width="120" alt="BudgetLens Logo">
+</p>
 
-<br />
-<div align="center">
-  <a href="https://github.com/bkk31/budgetlens">
-    <img src="budgetlens/assets/icon/icon.png" alt="Logo" width="120" height="120">
+<p align="center">
+  <b>A smart personal budgeting app with dynamic daily spending allowance, built for Android with Flutter.</b>
+</p>
+
+<p align="center">
+  <a href="https://flutter.dev">
+    <img src="https://img.shields.io/badge/Made%20with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Made with Flutter">
   </a>
-  <h3 align="center">BudgetLens</h3>
-  <p align="center">
-    A smart personal budgeting application with a dynamic daily spending allowance.
-    <br />
-    <a href="https://github.com/bkk31/budgetlens"><strong>Explore the docs »</strong></a>
-    <br /><br />
-    <a href="https://github.com/bkk31/budgetlens">View Demo</a>
-    &middot;
-    <a href="https://github.com/bkk31/budgetlens/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    &middot;
-    <a href="https://github.com/bkk31/budgetlens/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
-</div>
+  <a href="https://dart.dev">
+    <img src="https://img.shields.io/badge/Language-Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Language Dart">
+  </a>
+  <a href="https://github.com/bkk31">
+    <img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge" alt="Maintained">
+  </a>
+</p>
 
-## 📖 Table of Contents
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#features">Features</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#project-structure">Project Structure</a></li>
-    <li><a href="#dependencies">Dependencies</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-## 💡 About The Project
-
-BudgetLens is a mobile budgeting application, built with **Flutter**, designed to help users manage their finances using a **dynamic daily spending allowance**.
-
-Instead of a rigid, fixed daily budget, BudgetLens calculates your allowance by dividing your **remaining budget** by the **number of days left** in the budget cycle. This means:
-* **Spend less today** → your allowance automatically increases tomorrow.
-* **Spend more today** → your allowance is adjusted downwards for the rest of the period.
-
-This flexible and intuitive approach encourages healthier budgeting habits and provides real-time accountability. All financial data is stored **locally** on your device, ensuring complete **privacy** and user control.
-
-Inspired by Buckwheat.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="center">
+  <a href="#about">About</a> •
+  <a href="#features">Features</a> •
+  <a href="#screenshots">Screenshots</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#license">License</a>
+</p>
 
 ---
 
-## 🛠️ Built With
+## 📖 About
 
-* ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) 
-* ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
+**BudgetLens** is a smart personal budgeting application designed to help you manage your finances with a **dynamic daily spending allowance**. Unlike traditional budgeting apps with fixed daily limits, BudgetLens adapts to your spending patterns by recalculating your allowance based on your remaining budget and days left in the cycle.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+The app leverages **Material You** dynamic theming to seamlessly adapt to your device's wallpaper colors, providing a personalized and modern user experience. All your financial data stays **private** and is stored locally on your device.
 
----
+> [!NOTE]
+> Inspired by [Buckwheat](https://github.com/danilkinkin/buckwheat), BudgetLens brings intelligent budgeting to Android with a clean, intuitive interface.
 
 ## ✨ Features
 
-* **Dynamic Daily Allowance** – Automatically updated based on remaining funds and days left in the budget cycle.
-* **Initial Setup Flow** – Easy guided setup to define your total budget and budgeting period (e.g., monthly).
-* **Dashboard** – Clean, intuitive overview providing key budget metrics at a glance.
-* **Transaction Logging** – Effortlessly add income (can be added by using minus sign) or expenses.
-* **Transaction History** – Review and track all past entries easily.
-* **Local Data Storage** – All financial data is saved securely on your device, ensuring privacy.
-* **Dynamic Theming** – Adapts to the device's system theme and colors for a native feel (where supported).
+- **🎨 Material You Design** - Fully adapts to your device's system colors (Android 12+).
+- **💰 Dynamic Daily Allowance** - Automatically recalculates based on remaining budget and days left.
+- **📊 Budget Analysis** - Visualize your spending patterns with categorized breakdowns (Needs, Wants, Savings).
+- **📝 Transaction Management** - Easily log expenses and income with category tagging.
+- **📅 Flexible Budget Periods** - Set custom budget cycles (weekly, monthly, or custom dates).
+- **💾 Backup & Restore** - Export and import your budget data as JSON files.
+- **🔒 Privacy First** - All data stays on your device. No cloud uploads, no tracking.
+- **⚡ Fast & Responsive** - Built with Flutter's high-performance rendering engine.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 📱 Screenshots
 
----
+|                             Dashboard (For Today)                             |                             Dashboard (Total Left)                             |                                 All Transactions                                  |
+| :---------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: |
+| <img src="budgetlens/assets/for_today.png" width="200" alt="Dashboard Today"> | <img src="budgetlens/assets/total_left.png" width="200" alt="Dashboard Total"> | <img src="budgetlens/assets/all_transactions.png" width="200" alt="Transactions"> |
 
-## 🚀 Getting Started
+|                               Budget Analysis                                |                                   Settings                                   |                                 Edit Budget                                 |
+| :--------------------------------------------------------------------------: | :--------------------------------------------------------------------------: | :-------------------------------------------------------------------------: |
+| <img src="budgetlens/assets/budget_analysis.png" width="200" alt="Analysis"> | <img src="budgetlens/assets/settings_screen.png" width="200" alt="Settings"> | <img src="budgetlens/assets/edit_budget.png" width="200" alt="Edit Budget"> |
 
-Follow these simple instructions to set up and run BudgetLens locally.
+|                              Needs Transaction                              |                              Wants Transaction                              |                               Savings Transaction                               |
+| :-------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
+| <img src="budgetlens/assets/needs_transaction.png" width="200" alt="Needs"> | <img src="budgetlens/assets/wants_transaction.png" width="200" alt="Wants"> | <img src="budgetlens/assets/savings_transaction.png" width="200" alt="Savings"> |
 
-### Prerequisites
+## 🛠 Installation
 
-* **Flutter SDK** → [Installation Guide](https://flutter.dev/docs/get-started/install)
-* A code editor like **Visual Studio Code** with the **Flutter extension**.
+To run BudgetLens locally, you'll need [Flutter](https://flutter.dev/docs/get-started/install) installed.
 
-### Installation
+1.  **Clone the repository:**
 
-1.  Clone the repository:
     ```bash
-    git clone [https://github.com/bkk31/budgetlens.git](https://github.com/bkk31/budgetlens.git)
-    ```
-
-2.  Navigate into the project folder:
-    ```bash
+    git clone https://github.com/bkk31/budgetlens.git
     cd budgetlens/budgetlens
     ```
 
-3.  Install dependencies:
+2.  **Install dependencies:**
+
     ```bash
     flutter pub get
     ```
 
-4.  Run the app on a connected device or emulator:
+3.  **Run the app:**
+
     ```bash
     flutter run
     ```
 
-5.  (Optional) Build the release APK:
+4.  **(Optional) Build the release APK:**
     ```bash
     flutter build apk --release
     ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 🏗 Tech Stack
 
----
+BudgetLens is built with carefully selected Flutter packages:
+
+- [**Flutter**](https://flutter.dev) - UI Toolkit.
+- [**provider**](https://pub.dev/packages/provider) - State management solution.
+- [**shared_preferences**](https://pub.dev/packages/shared_preferences) - Local data persistence.
+- [**dynamic_color**](https://pub.dev/packages/dynamic_color) - Material You dynamic theming.
+- [**intl**](https://pub.dev/packages/intl) - Internationalization and date formatting.
+- [**uuid**](https://pub.dev/packages/uuid) - Unique transaction ID generation.
+- [**share_plus**](https://pub.dev/packages/share_plus) - Native sharing capabilities.
+- [**file_picker**](https://pub.dev/packages/file_picker) - File selection for backup restore.
+- [**path_provider**](https://pub.dev/packages/path_provider) - Local file system access.
+- [**permission_handler**](https://pub.dev/packages/permission_handler) - Permission handling.
+- [**google_fonts**](https://pub.dev/packages/google_fonts) - Custom typography.
+- [**cupertino_icons**](https://pub.dev/packages/cupertino_icons) - iOS-style icons.
 
 ## 📂 Project Structure
 
@@ -134,43 +116,41 @@ Follow these simple instructions to set up and run BudgetLens locally.
 budgetlens/
  ├── lib/
  │   ├── main.dart                # App entry point and root widget
- │   ├── build_provider.dart      # State management configuration using Provider
- │   ├── calculator.dart          # Core dynamic budgeting logic and calculations
- │   ├── models.dart              # Data models (e.g., Transaction, Budget)
- │   ├── screens/                 # Major UI screens (Dashboard, Setup, History)
+ │   ├── build_provider.dart      # State management with Provider
+ │   ├── calculator.dart          # Core dynamic budgeting logic
+ │   ├── models.dart              # Data models (Transaction, BudgetState)
+ │   ├── screens/                 # UI screens (Dashboard, Setup, Transactions, Analysis, Settings)
  │   └── widgets/                 # Reusable UI components
- ├── assets/                      # Application assets (icons, images)
+ ├── assets/                      # Application assets (icons, screenshots)
  └── pubspec.yaml                 # Dependencies and project metadata
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
----
+## 🤝 Contributing
 
-## 📦 Dependencies
-### Core packages:
- * flutter – The main UI framework.
- * provider – For robust and simple state management across the app.
- * shared_preferences – Used for local, persistent data storage on the device.
- * dynamic_system_colors – Provides support for system-adaptive theming.
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
----
+Contributions are welcome! If you have suggestions or want to report a bug, please open an issue or submit a pull request.
 
-## 📜 License
-Distributed under the GNU General Public License v3.0. See LICENSE for more details.
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
----
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes (`git commit -m 'Add some amazing feature'`).
+4.  Push to the branch (`git push origin feature/amazing-feature`).
+5.  Open a Pull Request.
 
-### ✉️ Contact
- * Bhargava K K — bkk31
- * Email - bhargavakk13@gmail.com
- * Project Link: https://github.com/bkk31/budgetlens
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
----
+## 🙏 Acknowledgments
 
-### 🙏 Acknowledgments
- * Inspired by: https://github.com/danilkinkin/buckwheat
- * The Flutter & Dart teams
- * The Open-source community ❤️
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+- Inspired by [Buckwheat](https://github.com/danilkinkin/buckwheat) - A beautiful budgeting app.
+- The Flutter & Dart teams for the amazing framework.
+- The open-source community ❤️
+
+## 📄 License
+
+Distributed under the GNU General Public License v3.0. See `LICENSE` for more information.
+
+## ✉️ Contact
+
+- **Bhargava K K** — [bkk31](https://github.com/bkk31)
+- **Email** - bhargavakk13@gmail.com
+- **Project Link**: [https://github.com/bkk31/budgetlens](https://github.com/bkk31/budgetlens)
+
+---
 
 [<img alt='Get it on GitHub' height="60" src='budgetlens/assets/icon/get-it-on-github.png' />](https://github.com/bkk31/budgetlens/releases)

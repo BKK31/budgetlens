@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
           builder: (context, child) {
             return MaterialApp(
               title: 'BudgetLens',
+              debugShowCheckedModeBanner: false,
               theme: ThemeData(
                 useMaterial3: true,
                 colorScheme:
