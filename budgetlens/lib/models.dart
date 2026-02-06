@@ -1,4 +1,6 @@
-class BudgetState{
+import 'package:uuid/uuid.dart';
+
+class BudgetState {
   double totalBudget = 0.0;
   double totalSpent = 0.0;
   bool viewMode = true;
@@ -7,11 +9,25 @@ class BudgetState{
   double todaysSpend = 0.0;
   int lastTransactionDay = DateTime.now().day;
   double dailyAllowance = 0.0;
+  double totalIncome = 0.0;
+  double needsSpent = 0.0;
+  double wantsSpent = 0.0;
 }
 
-class Transaction{
+enum CategoryType { needs, wants, savings }
+
+class Transaction {
+  String id;
   double amount;
   String tag;
   DateTime datetime;
-  Transaction(this.amount, this.tag, this.datetime);
+  CategoryType categoryType;
+
+  Transaction(
+    this.amount,
+    this.tag,
+    this.datetime, {
+    this.categoryType = CategoryType.needs,
+    String? id,
+  }) : id = id ?? const Uuid().v4();
 }

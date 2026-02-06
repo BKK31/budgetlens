@@ -1,4 +1,5 @@
 import 'package:budgetlens/screens/settings_screen.dart';
+import 'package:budgetlens/screens/analysis_screen.dart';
 import 'package:budgetlens/widgets/numpad.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +49,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SettingsScreen()),
+                          builder: (context) => const AnalysisScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.pie_chart),
+                    iconSize: 40,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.settings),

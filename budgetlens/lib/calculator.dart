@@ -2,7 +2,10 @@ import 'models.dart';
 
 class BudgetCalculator {
   double getRemainingBudget(BudgetState state) {
-    return state.totalBudget - state.totalSpent;
+    // 50/30/20 Rule: Only 80% is spendable (Needs + Wants).
+    // Savings (20%) + Income is handled separately.
+    double spendableBudget = state.totalBudget * 0.8;
+    return spendableBudget - state.totalSpent;
   }
 
   int getDaysRemaining(BudgetState state) {
@@ -37,8 +40,11 @@ class BudgetCalculator {
   }
 
   void addIncome(BudgetState state, double amount) {
-    state.totalSpent -= amount;
-    state.todaysSpend -= amount;
+    state.totalIncome += amount;
+    // Income does not reduce spent in 50/30/20, it goes to savings.
+    // However, if we want to track 'todaysSpend' purely as expense, we shouldn't reduce it either.
+    // If todaysSpend tracks 'net', then we keep it. But for 50/30/20, we likely want 'todaysSpend' to be expenses only.
+    // state.todaysSpend -= amount;
   }
 
   bool switchMode(BudgetState state) {

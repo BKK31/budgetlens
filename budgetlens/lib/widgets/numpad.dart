@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
+import '../models.dart';
 
 class Numpad extends StatefulWidget {
   const Numpad({super.key});
@@ -15,9 +16,9 @@ class _NumpadState extends State<Numpad> {
 
   void _handleTap(String value) {
     setState(() {
-      if(_currentInput =='0' && value !='.'){
+      if (_currentInput == '0' && value != '.') {
         _currentInput = value;
-      }else{
+      } else {
         _currentInput += value;
       }
     });
@@ -47,9 +48,55 @@ class _NumpadState extends State<Numpad> {
 
   void _handleConfirm(BudgetProvider budgetProvider) {
     if (_currentInput.isEmpty) return;
-    final amount = double.tryParse(_currentInput);
+    double? amount = double.tryParse(_currentInput);
     if (amount == null) return;
 
+    if (_isIncome) {
+      // Income -> Automatically Savings.
+      // Confirm Tag? User request: "When user adds an income, it should go to the 20% budget."
+      // Assuming we still want to tag it (e.g. Salary, Gift).
+      // Pass negative amount for income
+      _showTagDialog(budgetProvider, -amount, CategoryType.savings);
+    } else {
+      // Expense -> Select Needs or Wants
+      showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            title: const Text('Select Category'),
+            children: [
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showTagDialog(budgetProvider, amount, CategoryType.needs);
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Needs (50%)', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showTagDialog(budgetProvider, amount, CategoryType.wants);
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Wants (30%)', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _showTagDialog(
+    BudgetProvider budgetProvider,
+    double amount,
+    CategoryType categoryType,
+  ) {
     final tagController = TextEditingController();
 
     showDialog(
@@ -65,8 +112,10 @@ class _NumpadState extends State<Numpad> {
               children: [
                 TextField(
                   controller: tagController,
-                  decoration:
-                      const InputDecoration(hintText: "e.g., Food, Shopping"),
+                  decoration: const InputDecoration(
+                    hintText: "e.g., Food, Shopping",
+                  ),
+                  autofocus: true,
                 ),
                 const SizedBox(height: 16),
                 if (uniqueTags.isNotEmpty) ...[
@@ -83,7 +132,7 @@ class _NumpadState extends State<Numpad> {
                       );
                     }).toList(),
                   ),
-                ]
+                ],
               ],
             ),
           ),
@@ -100,14 +149,26 @@ class _NumpadState extends State<Numpad> {
                 if (tag.isEmpty) {
                   tag = 'default';
                 }
+
                 budgetProvider.recordTransaction(
-                    _isIncome ? -amount : amount, tag);
+                  amount,
+                  tag,
+                  categoryType: categoryType,
+                );
+
                 budgetProvider.updatePreview(0, false);
                 setState(() {
                   _currentInput = '';
                   _isIncome = false;
                 });
                 Navigator.of(dialogContext).pop();
+
+                // Feedback for Income/Savings
+                if (categoryType == CategoryType.savings) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Added to Savings (20%)')),
+                  );
+                }
               },
               child: const Text('OK'),
             ),
@@ -129,11 +190,11 @@ class _NumpadState extends State<Numpad> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           alignment: Alignment.centerRight,
           child: Text(
-            '${_isIncome ? '-' : ''}₹${_currentInput.isEmpty ? '0' : _currentInput}',
+            '${_isIncome ? ' ' : ''}₹${_currentInput.isEmpty ? '0' : _currentInput}',
             style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
-              color: _isIncome ? colorScheme.error : colorScheme.primary,
+              color: _isIncome ? Colors.green : colorScheme.primary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -145,73 +206,73 @@ class _NumpadState extends State<Numpad> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                  // Number grid (7, 8, 9, 4, 5, 6, 1, 2, 3, 0, .)
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        _buildNumberRow(['7', '8', '9']),
-                        _buildNumberRow(['4', '5', '6']),
-                        _buildNumberRow(['1', '2', '3']),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: _NumpadButton(
-                                  text: '0',
-                                  onPressed: () => _handleTap('0'),
-                                ),
+                // Number grid (7, 8, 9, 4, 5, 6, 1, 2, 3, 0, .)
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    children: [
+                      _buildNumberRow(['7', '8', '9']),
+                      _buildNumberRow(['4', '5', '6']),
+                      _buildNumberRow(['1', '2', '3']),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: _NumpadButton(
+                                text: '0',
+                                onPressed: () => _handleTap('0'),
                               ),
-                              Expanded(
-                                child: _NumpadButton(
-                                  text: '.',
-                                  onPressed: () {
-                                    if (!_currentInput.contains('.')) {
-                                      _handleTap('.');
-                                    }
-                                  },
-                                ),
+                            ),
+                            Expanded(
+                              child: _NumpadButton(
+                                text: '.',
+                                onPressed: () {
+                                  if (!_currentInput.contains('.')) {
+                                    _handleTap('.');
+                                  }
+                                },
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  // Operations column (backspace, minus, check)
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: _NumpadButton(
-                            icon: Icons.backspace_outlined,
-                            onPressed: _handleBackspace,
-                            color: colorScheme.tertiary,
-                          ),
+                ),
+                // Operations column (backspace, minus, check)
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _NumpadButton(
+                          icon: Icons.backspace_outlined,
+                          onPressed: _handleBackspace,
+                          color: colorScheme.tertiary,
                         ),
-                        Expanded(
-                          child: _NumpadButton(
-                            text: '-',
-                            onPressed: _toggleSign,
-                            color: colorScheme.tertiary,
-                          ),
+                      ),
+                      Expanded(
+                        child: _NumpadButton(
+                          text: 'i',
+                          onPressed: _toggleSign,
+                          color: colorScheme.tertiary,
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: _NumpadButton(
-                            icon: Icons.check,
-                            onPressed: () =>
-                                _handleConfirm(context.read<BudgetProvider>()),
-                            color: colorScheme.primary,
-                            isElevated: true,
-                          ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: _NumpadButton(
+                          icon: Icons.check,
+                          onPressed: () =>
+                              _handleConfirm(context.read<BudgetProvider>()),
+                          color: colorScheme.primary,
+                          isElevated: true,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ],
             ),
           ),
         ),

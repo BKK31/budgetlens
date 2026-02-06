@@ -21,14 +21,15 @@ class BudgetProvider extends ChangeNotifier {
       state.todaysSpend = 0.0;
       state.lastTransactionDay = today;
     } else {
-      // Same day - recalculate from today's transactions
+      // Same day - recalculate from today's transactions (Expenses Only)
       final now = DateTime.now();
       state.todaysSpend = transactions
           .where(
             (t) =>
                 t.datetime.day == now.day &&
                 t.datetime.month == now.month &&
-                t.datetime.year == now.year,
+                t.datetime.year == now.year &&
+                t.amount > 0, // Only expenses
           )
           .fold(0, (sum, t) => sum + t.amount);
     }
@@ -85,12 +86,32 @@ class BudgetProvider extends ChangeNotifier {
     return calculator.getRemainingBudget(state);
   }
 
-  void recordTransaction(double amount, String tag) {
+  void recordTransaction(
+    double amount,
+    String tag, {
+    CategoryType categoryType = CategoryType.needs,
+  }) {
     checkAndResetForNewDay();
-    Transaction newTransaction = Transaction(amount, tag, DateTime.now());
+    Transaction newTransaction = Transaction(
+      amount,
+      tag,
+      DateTime.now(),
+      categoryType: categoryType,
+    );
     transactions.add(newTransaction);
-    state.totalSpent += amount;
-    state.todaysSpend += amount;
+    if (amount < 0) {
+      // Income
+      state.totalIncome += amount.abs();
+    } else {
+      // Expense
+      state.totalSpent += amount;
+      state.todaysSpend += amount;
+      if (categoryType == CategoryType.needs) {
+        state.needsSpent += amount;
+      } else if (categoryType == CategoryType.wants) {
+        state.wantsSpent += amount;
+      }
+    }
     saveTransactions();
     notifyListeners();
   }
@@ -118,6 +139,9 @@ class BudgetProvider extends ChangeNotifier {
     state.budgetStartDate = startDate;
     state.budgetEndDate = endDate;
     state.totalSpent = 0.0;
+    state.totalIncome = 0.0;
+    state.needsSpent = 0.0;
+    state.wantsSpent = 0.0;
     state.todaysSpend = 0.0;
     state.lastTransactionDay = DateTime.now().day;
     transactions.clear();
@@ -136,9 +160,11 @@ class BudgetProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final transactionData = transactions.map((t) {
       return {
+        'id': t.id,
         'amount': t.amount,
         'tag': t.tag,
         'datetime': t.datetime.toString(),
+        'categoryType': t.categoryType.index, // Save index for simplicity
       };
     }).toList();
 
@@ -156,6 +182,10 @@ class BudgetProvider extends ChangeNotifier {
           t['amount'] as double,
           t['tag'] as String,
           DateTime.parse(t['datetime'] as String),
+          categoryType: t['categoryType'] != null
+              ? CategoryType.values[t['categoryType'] as int]
+              : CategoryType.needs, // Default for legacy
+          id: t['id'] as String?,
         );
       }).toList();
 
@@ -212,9 +242,11 @@ class BudgetProvider extends ChangeNotifier {
       'endDate': state.budgetEndDate.toString(),
       'transactions': transactions.map((t) {
         return {
+          'id': t.id,
           'amount': t.amount,
           'tag': t.tag,
           'datetime': t.datetime.toString(),
+          'categoryType': t.categoryType.index,
         };
       }).toList(),
     };
@@ -243,6 +275,10 @@ class BudgetProvider extends ChangeNotifier {
           t['amount'] as double,
           t['tag'] as String,
           DateTime.parse(t['datetime'] as String),
+          categoryType: t['categoryType'] != null
+              ? CategoryType.values[t['categoryType'] as int]
+              : CategoryType.needs,
+          id: t['id'] as String?,
         );
       }).toList();
 
@@ -251,20 +287,21 @@ class BudgetProvider extends ChangeNotifier {
       await prefs.setDouble('totalBudget', newBudget);
       await prefs.setString('startDate', newStartDate.toString());
       await prefs.setString('endDate', newEndDate.toString());
-      
+
       // Save transactions directly
       final transactionData = newTransactions.map((t) {
         return {
+          'id': t.id,
           'amount': t.amount,
           'tag': t.tag,
           'datetime': t.datetime.toString(),
+          'categoryType': t.categoryType.index,
         };
       }).toList();
       await prefs.setString('transactions', jsonEncode(transactionData));
-      
+
       // Mark launch complete just in case
       await markLaunchComplete();
-
     } catch (e) {
       print('Error restoring backup: $e');
       rethrow;
@@ -272,29 +309,61 @@ class BudgetProvider extends ChangeNotifier {
   }
 
   // Check if Budget is expired
-  bool get isBudgetExpired{
+  bool get isBudgetExpired {
     final now = DateTime.now();
 
     final today = DateTime(now.year, now.month, now.day);
 
-    final end = DateTime(state.budgetEndDate.year, state.budgetEndDate.month, state.budgetEndDate.day);
+    final end = DateTime(
+      state.budgetEndDate.year,
+      state.budgetEndDate.month,
+      state.budgetEndDate.day,
+    );
 
     return today.isAfter(end);
   }
 
   // Recalculate Total Spent
-  void recalculateTotalSpent(){
-    state.totalSpent = transactions.where((t) => t.datetime.isAfter(state.budgetStartDate) || t.datetime.isAtSameMomentAs(state.budgetStartDate)).fold(0,(sum,t) => sum + t.amount);
+  void recalculateTotalSpent() {
+    final validTransactions = transactions.where(
+      (t) =>
+          t.datetime.isAfter(state.budgetStartDate) ||
+          t.datetime.isAtSameMomentAs(state.budgetStartDate),
+    );
+
+    state.totalSpent = validTransactions
+        .where((t) => t.amount > 0)
+        .fold(0, (sum, t) => sum + t.amount);
+
+    state.totalIncome = validTransactions
+        .where((t) => t.amount < 0)
+        .fold(0, (sum, t) => sum + t.amount.abs());
+
+    state.needsSpent = validTransactions
+        .where((t) => t.amount > 0 && t.categoryType == CategoryType.needs)
+        .fold(0, (sum, t) => sum + t.amount);
+
+    state.wantsSpent = validTransactions
+        .where((t) => t.amount > 0 && t.categoryType == CategoryType.wants)
+        .fold(0, (sum, t) => sum + t.amount);
+
     notifyListeners();
   }
 
   // Extend Budget
   Future<void> extendBudget(DateTime newEndDate) async {
-    await updateBudgetSetup(state.totalBudget, state.budgetStartDate, newEndDate);
+    await updateBudgetSetup(
+      state.totalBudget,
+      state.budgetStartDate,
+      newEndDate,
+    );
   }
 
   // Rollover the remaining amount from budget
-  Future<void> rolloverBudget(double additionalAmount, DateTime newEndDate) async {
+  Future<void> rolloverBudget(
+    double additionalAmount,
+    DateTime newEndDate,
+  ) async {
     // Calculate remaining amount
     double remaining = calculator.getRemainingBudget(state);
 
@@ -309,5 +378,30 @@ class BudgetProvider extends ChangeNotifier {
 
     // Recalculate spent amount
     recalculateTotalSpent();
+  }
+
+  // Delete Transaction
+  void deleteTransaction(String id) {
+    final index = transactions.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      // Logic: Just remove and recalculate.
+      // Re-calculating from scratch is safer than doing complex manual rollback logic
+      // because we have different buckets (Needs/Wants/Savings/Income).
+      transactions.removeAt(index);
+      saveTransactions();
+      recalculateTotalSpent();
+      checkAndResetForNewDay(); // Ensure todaysSpend is correct
+    }
+  }
+
+  // Update Transaction
+  void updateTransaction(Transaction updatedTransaction) {
+    final index = transactions.indexWhere((t) => t.id == updatedTransaction.id);
+    if (index != -1) {
+      transactions[index] = updatedTransaction;
+      saveTransactions();
+      recalculateTotalSpent();
+      checkAndResetForNewDay();
+    }
   }
 }
