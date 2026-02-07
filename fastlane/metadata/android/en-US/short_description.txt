@@ -1,0 +1,1 @@
+Smart personal budget tracker with dynamic daily allowance and privacy first.
