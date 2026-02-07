@@ -52,7 +52,11 @@ jobs:
         run: flutter build apk --release --split-per-abi
 
       - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2 # Updated to v2 while we're at it!
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: budgetlens/build/app/outputs/flutter-apk/app-*-release.apk
+          files: |
+            budgetlens/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            budgetlens/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            budgetlens/build/app/outputs/flutter-apk/app-x86_64-release.apk
+
