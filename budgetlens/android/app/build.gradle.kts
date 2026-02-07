@@ -65,6 +65,13 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs (for IzzyOnDroid/F-Droid)
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles (for Google Play)
+        includeInBundle = false
+    }
 }
 
 flutter {
