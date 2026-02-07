@@ -1,0 +1,5 @@
+• Core dynamic budgeting logic for daily allowances.
+• Material You dynamic theming support.
+• Expense and income management with Needs/Wants/Savings tagging.
+• Local backup and restore functionality.
+• Visual budget analysis and spending breakdowns.
