@@ -1,4 +1,4 @@
-import 'package:budgetlens/widgets/numpad.dart';
+import '../currency_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
@@ -130,6 +130,53 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _showCurrencyDialog(BuildContext context, BudgetProvider provider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Select Currency',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: CurrencyData.currencySymbols.length,
+                  itemBuilder: (context, index) {
+                    final currencyCode = CurrencyData.currencySymbols.keys
+                        .elementAt(index);
+                    final symbol = CurrencyData.currencySymbols[currencyCode];
+                    return ListTile(
+                      title: Text('$currencyCode ($symbol)'),
+                      subtitle: Text(
+                        CurrencyData.currencies[currencyCode] ?? '',
+                      ),
+                      onTap: () {
+                        provider.setCurrency(currencyCode);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -214,7 +261,7 @@ class SettingsScreen extends StatelessWidget {
                                 children: [
                                   Center(
                                     child: Text(
-                                      '₹${budgetProvider.remainingBudget.toStringAsFixed(2)}',
+                                      '${budgetProvider.currencySymbol}${budgetProvider.remainingBudget.toStringAsFixed(2)}',
                                       style: textTheme.displaySmall?.copyWith(
                                         color: colorScheme.onTertiaryContainer,
                                         fontWeight: FontWeight.bold,
@@ -257,7 +304,7 @@ class SettingsScreen extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          '₹${budgetProvider.state.totalBudget.toStringAsFixed(2)}',
+                                          '${budgetProvider.currencySymbol}${budgetProvider.state.totalBudget.toStringAsFixed(2)}',
                                           style: textTheme.headlineSmall
                                               ?.copyWith(
                                                 color: colorScheme
@@ -390,12 +437,14 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ),
                           trailing: Text(
-                            'Indian Rupee (₹)',
+                            '${budgetProvider.state.currencyCode} (${budgetProvider.currencySymbol})',
                             style: TextStyle(
                               color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          onTap: () {},
+                          onTap: () {
+                            _showCurrencyDialog(context, budgetProvider);
+                          },
                         ),
                         ListTile(
                           leading: const Icon(Icons.backup),

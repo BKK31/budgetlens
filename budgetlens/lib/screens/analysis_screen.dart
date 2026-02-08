@@ -36,6 +36,7 @@ class AnalysisScreen extends StatelessWidget {
             children: [
               _buildCategoryCard(
                 context,
+                provider,
                 title: 'Needs (50%)',
                 spent: needsSpent,
                 target: needsTarget,
@@ -54,6 +55,7 @@ class AnalysisScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildCategoryCard(
                 context,
+                provider,
                 title: 'Wants (30%)',
                 spent: wantsSpent,
                 target: wantsTarget,
@@ -72,6 +74,7 @@ class AnalysisScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildSavingsCard(
                 context,
+                provider,
                 title: 'Savings & Debt (20%)',
                 amount: totalSavings,
                 baseTarget: savingsTarget,
@@ -106,7 +109,8 @@ class AnalysisScreen extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(
-    BuildContext context, {
+    BuildContext context,
+    BudgetProvider provider, {
     required String title,
     required double spent,
     required double target,
@@ -140,7 +144,7 @@ class AnalysisScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    '₹${spent.toStringAsFixed(0)} / ₹${target.toStringAsFixed(0)}',
+                    '${provider.currencySymbol}${spent.toStringAsFixed(0)} / ${provider.currencySymbol}${target.toStringAsFixed(0)}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -160,8 +164,8 @@ class AnalysisScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 isOverBudget
-                    ? 'Over budget by ₹${(spent - target).toStringAsFixed(0)}'
-                    : '₹${(target - spent).toStringAsFixed(0)} remaining',
+                    ? 'Over budget by ${provider.currencySymbol}${(spent - target).toStringAsFixed(0)}'
+                    : '${provider.currencySymbol}${(target - spent).toStringAsFixed(0)} remaining',
                 style: TextStyle(
                   color: isOverBudget ? Colors.red : Colors.grey[600],
                   fontWeight: FontWeight.w500,
@@ -175,7 +179,8 @@ class AnalysisScreen extends StatelessWidget {
   }
 
   Widget _buildSavingsCard(
-    BuildContext context, {
+    BuildContext context,
+    BudgetProvider provider, {
     required String title,
     required double amount,
     required double baseTarget,
@@ -209,7 +214,7 @@ class AnalysisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                '₹${amount.toStringAsFixed(0)}',
+                '${provider.currencySymbol}.${amount.toStringAsFixed(0)}',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -218,7 +223,7 @@ class AnalysisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Includes 20% allocation (₹${baseTarget.toStringAsFixed(0)}) + Extra Income (₹${extraIncome.toStringAsFixed(0)})',
+                'Includes 20% allocation (${provider.currencySymbol}${baseTarget.toStringAsFixed(0)}) + Extra Income (${provider.currencySymbol}${extraIncome.toStringAsFixed(0)})',
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],

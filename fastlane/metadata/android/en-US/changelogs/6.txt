@@ -1,0 +1,5 @@
+- Added comprehensive currency support (160+ currencies).
+- Added "Restore from backup" feature to onboarding.
+- Added currency selection in Settings.
+- dynamic currency symbol support throughout the app.
+- Bug fixes and performance improvements.

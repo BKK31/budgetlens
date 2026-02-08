@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'models.dart';
 import 'calculator.dart';
+import 'currency_data.dart';
 
 class BudgetProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
@@ -130,14 +131,19 @@ class BudgetProvider extends ChangeNotifier {
     await prefs.setBool('hasLaunchedBefore', true);
   }
 
+  String get currencySymbol =>
+      CurrencyData.currencySymbols[state.currencyCode] ?? state.currencyCode;
+
   Future<void> saveBudgetSetup(
     double budget,
     DateTime startDate,
-    DateTime endDate,
-  ) async {
+    DateTime endDate, {
+    String currencyCode = 'INR',
+  }) async {
     state.totalBudget = budget;
     state.budgetStartDate = startDate;
     state.budgetEndDate = endDate;
+    state.currencyCode = currencyCode;
     state.totalSpent = 0.0;
     state.totalIncome = 0.0;
     state.needsSpent = 0.0;
@@ -151,6 +157,7 @@ class BudgetProvider extends ChangeNotifier {
     await prefs.setDouble('totalBudget', budget);
     await prefs.setString('startDate', startDate.toString());
     await prefs.setString('endDate', endDate.toString());
+    await prefs.setString('currencyCode', currencyCode);
 
     await markLaunchComplete();
     notifyListeners();
@@ -199,11 +206,16 @@ class BudgetProvider extends ChangeNotifier {
     final savedBudget = prefs.getDouble('totalBudget');
     final savedStartDate = prefs.getString('startDate');
     final savedEndDate = prefs.getString('endDate');
+    final savedCurrency = prefs.getString('currencyCode');
 
     if (savedBudget != null && savedStartDate != null && savedEndDate != null) {
       state.totalBudget = savedBudget;
       state.budgetStartDate = DateTime.parse(savedStartDate);
       state.budgetEndDate = DateTime.parse(savedEndDate);
+    }
+
+    if (savedCurrency != null) {
+      state.currencyCode = savedCurrency;
     }
 
     await loadTransactions();
@@ -231,7 +243,15 @@ class BudgetProvider extends ChangeNotifier {
     await prefs.setDouble('totalBudget', newBudget);
     await prefs.setString('startDate', newStartDate.toString());
     await prefs.setString('endDate', newEndDate.toString());
+    await prefs.setString('currencyCode', state.currencyCode);
 
+    notifyListeners();
+  }
+
+  Future<void> setCurrency(String currencyCode) async {
+    state.currencyCode = currencyCode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('currencyCode', currencyCode);
     notifyListeners();
   }
 
@@ -240,6 +260,7 @@ class BudgetProvider extends ChangeNotifier {
       'totalBudget': state.totalBudget,
       'startDate': state.budgetStartDate.toString(),
       'endDate': state.budgetEndDate.toString(),
+      'currencyCode': state.currencyCode,
       'transactions': transactions.map((t) {
         return {
           'id': t.id,
@@ -268,6 +289,7 @@ class BudgetProvider extends ChangeNotifier {
       final newBudget = decoded['totalBudget'] as double;
       final newStartDate = DateTime.parse(decoded['startDate'] as String);
       final newEndDate = DateTime.parse(decoded['endDate'] as String);
+      final newCurrency = decoded['currencyCode'] as String? ?? 'INR';
       final List<dynamic> newTransactionsJson = decoded['transactions'];
 
       final newTransactions = newTransactionsJson.map((t) {
@@ -287,6 +309,7 @@ class BudgetProvider extends ChangeNotifier {
       await prefs.setDouble('totalBudget', newBudget);
       await prefs.setString('startDate', newStartDate.toString());
       await prefs.setString('endDate', newEndDate.toString());
+      await prefs.setString('currencyCode', newCurrency);
 
       // Save transactions directly
       final transactionData = newTransactions.map((t) {

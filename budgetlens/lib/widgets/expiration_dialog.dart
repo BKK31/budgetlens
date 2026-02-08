@@ -78,9 +78,9 @@ class _ExpirationDialogState extends State<ExpirationDialog> {
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Extra Amount',
-                prefixText: '₹',
+                prefixText: '${provider.currencySymbol} ',
               ),
             ),
           ],
@@ -93,7 +93,7 @@ class _ExpirationDialogState extends State<ExpirationDialog> {
           FilledButton(
             onPressed: () async {
               final extra = double.tryParse(controller.text) ?? 0.0;
-              
+
               // Pick new end date
               final picked = await showDatePicker(
                 context: context,

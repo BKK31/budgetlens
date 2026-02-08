@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
+import '../currency_data.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:restart_app/restart_app.dart';
+import 'dart:io';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
@@ -15,12 +19,7 @@ class _SetupScreenState extends State<SetupScreen> {
   DateTime? selectedEndDate;
   String _selectedCurrencyCode = 'INR';
 
-  final Map<String, String> _currencySymbols = {
-    'USD': '\$',
-    'EUR': '€',
-    'GBP': '£',
-    'INR': '₹',
-  };
+  final Map<String, String> _currencySymbols = CurrencyData.currencySymbols;
 
   @override
   void initState() {
@@ -204,6 +203,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       budget,
                       selectedStartDate,
                       selectedEndDate!,
+                      currencyCode: _selectedCurrencyCode,
                     );
 
                     // Only navigate after it's saved
@@ -212,6 +212,58 @@ class _SetupScreenState extends State<SetupScreen> {
                     }
                   },
                   child: Text('Apply'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      FilePickerResult? result = await FilePicker.platform
+                          .pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: ['json'],
+                          );
+
+                      if (result != null) {
+                        File file = File(result.files.single.path!);
+                        String jsonString = await file.readAsString();
+                        if (context.mounted) {
+                          await Provider.of<BudgetProvider>(
+                            context,
+                            listen: false,
+                          ).restoreBackup(jsonString);
+
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Restore Successful'),
+                              content: const Text(
+                                'App needs to restart to apply changes.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Restart.restartApp();
+                                  },
+                                  child: const Text('Restart Now'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error restoring backup: $e')),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.restore),
+                  label: const Text('Restore from backup'),
                 ),
               ),
             ],

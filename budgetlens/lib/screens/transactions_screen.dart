@@ -97,7 +97,7 @@ class TransactionsScreen extends StatelessWidget {
           children: [
             // Row 1: Amount
             Text(
-              '$sign₹${transaction.amount.abs().toStringAsFixed(2)}',
+              '$sign${provider.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -219,7 +219,7 @@ class TransactionsScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Transaction?'),
         content: Text(
-          'Are you sure you want to delete "${transaction.tag}" of ₹${transaction.amount.abs()}?',
+          'Are you sure you want to delete "${transaction.tag}" of ${provider.currencySymbol}${transaction.amount.abs()}?',
         ),
         actions: [
           TextButton(

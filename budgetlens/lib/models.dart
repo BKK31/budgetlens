@@ -12,6 +12,7 @@ class BudgetState {
   double totalIncome = 0.0;
   double needsSpent = 0.0;
   double wantsSpent = 0.0;
+  String currencyCode = 'INR';
 }
 
 enum CategoryType { needs, wants, savings }

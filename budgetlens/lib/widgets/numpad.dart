@@ -190,7 +190,7 @@ class _NumpadState extends State<Numpad> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           alignment: Alignment.centerRight,
           child: Text(
-            '${_isIncome ? ' ' : ''}₹${_currentInput.isEmpty ? '0' : _currentInput}',
+            '${_isIncome ? ' ' : ''}${context.read<BudgetProvider>().currencySymbol}${_currentInput.isEmpty ? '0' : _currentInput}',
             style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,

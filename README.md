@@ -31,6 +31,19 @@
 
 ---
 
+> [!IMPORTANT]
+> **Update Notice for Version 3.1.0**
+> Due to a package name change required for inclusion in IzzyOnDroid, **you must uninstall the previous version** of BudgetLens before installing version 3.1.0.
+>
+> **Action Required:**
+> 1.  Open your current BudgetLens app and go to **Settings > Backup Data**.
+> 2.  Save the backup file to a safe location on your device.
+> 3.  **Uninstall** the old BudgetLens app.
+> 4.  Install the new version 3.1.0.
+> 5.  On the setup screen, tap **"Restore from backup"** and select your backup file.
+
+---
+
 ## 📖 About
 
 **BudgetLens** is a smart personal budgeting application designed to help you manage your finances with a **dynamic daily spending allowance**. Unlike traditional budgeting apps with fixed daily limits, BudgetLens adapts to your spending patterns by recalculating your allowance based on your remaining budget and days left in the cycle.

@@ -32,7 +32,7 @@ class HeaderPill extends StatelessWidget {
                 ),
               ),
               Text(
-                '₹${budgetProvider.projectedDisplayAmount.toStringAsFixed(2)}',
+                '${budgetProvider.currencySymbol}${budgetProvider.projectedDisplayAmount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
