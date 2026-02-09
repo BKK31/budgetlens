@@ -526,32 +526,6 @@ class SettingsScreen extends StatelessWidget {
                             }
                           },
                         ),
-                                      content: const Text(
-                                        'App needs to restart to apply changes.',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Restart.restartApp();
-                                          },
-                                          child: const Text('Restart Now'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error restoring backup: $e'),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                        ),
                       ],
                     ),
                   ),
