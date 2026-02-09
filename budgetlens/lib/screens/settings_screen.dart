@@ -7,6 +7,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'package:budgetlens/backup_channel.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -459,25 +461,15 @@ class SettingsScreen extends StatelessWidget {
                           onTap: () async {
                             try {
                               final jsonString = await budgetProvider.createBackup();
-                              
-                              // FilePicker.saveFile() uses ACTION_CREATE_DOCUMENT on Android
-                              // Returns content:// URI on Android 11+
-                              final filePath = await FilePicker.platform.saveFile(
-                                fileName: 'budget_lens_backup_${DateTime.now().millisecondsSinceEpoch}.json',
-                                type: FileType.custom,
-                                allowedExtensions: ['json'],
-                              );
-                              
-                              if (filePath != null) {
-                                await budgetProvider.writeBackupFile(filePath, jsonString);
-                                
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Backup saved successfully'),
-                                    ),
-                                  );
-                                }
+                              final bytes = Uint8List.fromList(utf8.encode(jsonString));
+                              await BackupChannel.exportJsonBackup(bytes);
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Backup saved successfully'),
+                                  ),
+                                );
                               }
                             } catch (e) {
                               if (context.mounted) {
@@ -500,17 +492,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              FilePickerResult? result = await FilePicker
-                                  .platform
-                                  .pickFiles(
-                                    type: FileType.custom,
-                                    allowedExtensions: ['json'],
-                                  );
-
-                              if (result != null) {
-                                final filePath = result.files.single.path!;
-                                // Use SAF-aware read method
-                                String jsonString = await budgetProvider.readBackupFile(filePath);
+                              final jsonString = await BackupChannel.importJsonBackup();
+                              if (jsonString != null) {
                                 await budgetProvider.restoreBackup(jsonString);
 
                                 if (context.mounted) {
