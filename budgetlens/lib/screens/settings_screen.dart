@@ -6,6 +6,7 @@ import 'transactions_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
 import 'dart:io';
+import 'dart:convert';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -469,7 +470,7 @@ class SettingsScreen extends StatelessWidget {
                               
                               if (filePath != null) {
                                 final file = File(filePath);
-                                await file.writeAsString(jsonString);
+                                await file.writeAsBytes(utf8.encode(jsonString));
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
