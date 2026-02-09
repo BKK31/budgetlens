@@ -458,10 +458,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              final jsonString = await budgetProvider
-                                  .createBackup();
-                              
-                              // Use FilePicker.saveFile() which uses ACTION_CREATE_DOCUMENT on Android
+                              // Try to save via FilePicker (which will use SAF)
                               final filePath = await FilePicker.platform.saveFile(
                                 fileName: 'budget_lens_backup_${DateTime.now().millisecondsSinceEpoch}.json',
                                 type: FileType.custom,
@@ -469,8 +466,10 @@ class SettingsScreen extends StatelessWidget {
                               );
                               
                               if (filePath != null) {
-                                final file = File(filePath);
-                                await file.writeAsBytes(utf8.encode(jsonString));
+                                final jsonString = await budgetProvider.createBackup();
+                                // Use SAF-aware write method
+                                await budgetProvider.writeBackupFile(filePath, jsonString);
+                                
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -508,8 +507,9 @@ class SettingsScreen extends StatelessWidget {
                                   );
 
                               if (result != null) {
-                                File file = File(result.files.single.path!);
-                                String jsonString = await file.readAsString();
+                                final filePath = result.files.single.path!;
+                                // Use SAF-aware read method
+                                String jsonString = await budgetProvider.readBackupFile(filePath);
                                 await budgetProvider.restoreBackup(jsonString);
 
                                 if (context.mounted) {
@@ -518,6 +518,30 @@ class SettingsScreen extends StatelessWidget {
                                     barrierDismissible: false,
                                     builder: (context) => AlertDialog(
                                       title: const Text('Restore Successful'),
+                                      content: const Text(
+                                        'App needs to restart to apply changes.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Restart.restartApp();
+                                          },
+                                          child: const Text('Restart Now'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error restoring backup: $e')),
+                                );
+                              }
+                            }
+                          },
+                        ),
                                       content: const Text(
                                         'App needs to restart to apply changes.',
                                       ),

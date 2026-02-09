@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'models.dart';
 import 'calculator.dart';
 import 'currency_data.dart';
+import 'package:android_document_file/android_document_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class BudgetProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
@@ -425,6 +428,63 @@ class BudgetProvider extends ChangeNotifier {
       saveTransactions();
       recalculateTotalSpent();
       checkAndResetForNewDay();
+    }
+  }
+
+  /// Read JSON string from a file path that may be a SAF URI
+  Future<String> readBackupFile(String filePath) async {
+    try {
+      // Check if it's a SAF URI (content://)
+      if (filePath.startsWith('content://')) {
+        // Use android_document_file to read from SAF URI
+        final documentFile = await AndroidDocumentFile.fromUri(filePath);
+        if (documentFile == null) {
+          throw Exception('Failed to access file via SAF');
+        }
+        final bytes = await documentFile.readAsBytes();
+        return utf8.decode(bytes);
+      } else {
+        // Regular file path
+        final file = File(filePath);
+        return await file.readAsString();
+      }
+    } catch (e) {
+      throw Exception('Error reading backup file: $e');
+    }
+  }
+
+  /// Save JSON string to a file path that may be a SAF URI
+  Future<void> writeBackupFile(String filePath, String jsonContent) async {
+    try {
+      // Check if it's a SAF URI (content://)
+      if (filePath.startsWith('content://')) {
+        // Use android_document_file to write to SAF URI
+        final documentFile = await AndroidDocumentFile.fromUri(filePath);
+        if (documentFile == null) {
+          throw Exception('Failed to access file via SAF');
+        }
+        await documentFile.writeAsBytes(utf8.encode(jsonContent));
+      } else {
+        // Regular file path
+        final file = File(filePath);
+        await file.writeAsString(jsonContent);
+      }
+    } catch (e) {
+      throw Exception('Error writing backup file: $e');
+    }
+  }
+
+  /// Save backup to app cache directory (doesn't require SAF/permissions)
+  Future<String> saveBackupToCache() async {
+    try {
+      final cacheDir = await getTemporaryDirectory();
+      final fileName = 'budget_lens_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+      final file = File('${cacheDir.path}/$fileName');
+      final jsonString = await createBackup();
+      await file.writeAsString(jsonString);
+      return file.path;
+    } catch (e) {
+      throw Exception('Error saving backup to cache: $e');
     }
   }
 }

@@ -230,8 +230,13 @@ class _SetupScreenState extends State<SetupScreen> {
                           );
 
                       if (result != null) {
-                        File file = File(result.files.single.path!);
-                        String jsonString = await file.readAsString();
+                        final filePath = result.files.single.path!;
+                        // Use SAF-aware read method
+                        String jsonString = await Provider.of<BudgetProvider>(
+                          context,
+                          listen: false,
+                        ).readBackupFile(filePath);
+                        
                         if (context.mounted) {
                           await Provider.of<BudgetProvider>(
                             context,

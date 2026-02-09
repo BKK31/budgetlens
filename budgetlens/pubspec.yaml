@@ -48,6 +48,8 @@ dependencies:
   path: ^1.9.1
   stack_trace: ^1.12.1
   url_launcher: ^6.3.2
+  android_document_file: ^0.3.1
+  cross_file: ^0.3.4
   web: ^1.1.1
   intl: ^0.20.2
   uuid: ^4.5.2
