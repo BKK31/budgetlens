@@ -458,7 +458,10 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              // Try to save via FilePicker (which will use SAF)
+                              final jsonString = await budgetProvider.createBackup();
+                              
+                              // FilePicker.saveFile() uses ACTION_CREATE_DOCUMENT on Android
+                              // Returns content:// URI on Android 11+
                               final filePath = await FilePicker.platform.saveFile(
                                 fileName: 'budget_lens_backup_${DateTime.now().millisecondsSinceEpoch}.json',
                                 type: FileType.custom,
@@ -466,8 +469,6 @@ class SettingsScreen extends StatelessWidget {
                               );
                               
                               if (filePath != null) {
-                                final jsonString = await budgetProvider.createBackup();
-                                // Use SAF-aware write method
                                 await budgetProvider.writeBackupFile(filePath, jsonString);
                                 
                                 if (context.mounted) {
