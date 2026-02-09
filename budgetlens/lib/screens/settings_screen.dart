@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
 import 'transactions_screen.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -150,8 +148,11 @@ class SettingsScreen extends StatelessWidget {
                   shrinkWrap: true,
                   itemCount: CurrencyData.currencySymbols.length,
                   itemBuilder: (context, index) {
-                    final currencyCode = CurrencyData.currencySymbols.keys
-                        .elementAt(index);
+                    // Sort currencies alphabetically
+                    final sortedCurrencies = CurrencyData.currencySymbols.keys
+                        .toList();
+                    sortedCurrencies.sort();
+                    final currencyCode = sortedCurrencies[index];
                     final symbol = CurrencyData.currencySymbols[currencyCode];
                     return ListTile(
                       title: Text('$currencyCode ($symbol)'),
@@ -458,17 +459,25 @@ class SettingsScreen extends StatelessWidget {
                             try {
                               final jsonString = await budgetProvider
                                   .createBackup();
-                              final directory = await getTemporaryDirectory();
-                              final file = File(
-                                '${directory.path}/budget_lens_backup.json',
+                              
+                              // Use FilePicker.saveFile() which uses ACTION_CREATE_DOCUMENT on Android
+                              final filePath = await FilePicker.platform.saveFile(
+                                fileName: 'budget_lens_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+                                type: FileType.custom,
+                                allowedExtensions: ['json'],
                               );
-                              if (await file.exists()) {
-                                await file.delete();
+                              
+                              if (filePath != null) {
+                                final file = File(filePath);
+                                await file.writeAsString(jsonString);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Backup saved successfully'),
+                                    ),
+                                  );
+                                }
                               }
-                              await file.writeAsString(jsonString, flush: true);
-                              await Share.shareXFiles([
-                                XFile(file.path),
-                              ], text: 'Budget Lens Backup');
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(

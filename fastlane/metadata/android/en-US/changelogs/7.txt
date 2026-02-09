@@ -1,0 +1,2 @@
+- Changed Backup and restore mechanism 
+- Sorted the currency list alphabetically 

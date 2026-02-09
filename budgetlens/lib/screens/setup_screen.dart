@@ -38,9 +38,13 @@ class _SetupScreenState extends State<SetupScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        // Sort currencies alphabetically
+        final sortedCurrencies = _currencySymbols.keys.toList();
+        sortedCurrencies.sort();
+        
         return SimpleDialog(
           title: const Text('Select Currency'),
-          children: _currencySymbols.keys.map((currencyCode) {
+          children: sortedCurrencies.map((currencyCode) {
             return SimpleDialogOption(
               onPressed: () {
                 setState(() {
