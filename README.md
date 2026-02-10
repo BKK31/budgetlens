@@ -78,6 +78,13 @@ The app leverages **Material You** dynamic theming to seamlessly adapt to your d
 | :-------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
 | <img src="budgetlens/assets/needs_transaction.png" width="200" alt="Needs"> | <img src="budgetlens/assets/wants_transaction.png" width="200" alt="Wants"> | <img src="budgetlens/assets/savings_transaction.png" width="200" alt="Savings"> |
 
+## 💾 Download now
+
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidButtonGreyBorder_nofont.png" height="80" alt="Get it at IzzyOnDroid">](https://apt.izzysoft.de/packages/com.budget.lens)
+
+[<img alt='Get it on GitHub' height="80" src='budgetlens/assets/icon/get-it-on-github.png' />](https://github.com/bkk31/budgetlens/releases)
+
+
 ## 🛠 Installation
 
 To run BudgetLens locally, you'll need [Flutter](https://flutter.dev/docs/get-started/install) installed.
@@ -166,4 +173,3 @@ Distributed under the GNU General Public License v3.0. See `LICENSE` for more in
 
 ---
 
-[<img alt='Get it on GitHub' height="60" src='budgetlens/assets/icon/get-it-on-github.png' />](https://github.com/bkk31/budgetlens/releases)
