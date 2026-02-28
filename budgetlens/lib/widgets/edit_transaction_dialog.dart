@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models.dart';
+import 'package:provider/provider.dart';
+import '../build_provider.dart';
 
 class EditTransactionDialog extends StatefulWidget {
   final Transaction transaction;
@@ -58,6 +60,8 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
   @override
   Widget build(BuildContext context) {
     final isIncome = widget.transaction.amount < 0;
+    final budgetProvider = context.watch<BudgetProvider>();
+    final isCustom = budgetProvider.state.isCustomStrategy;
 
     return AlertDialog(
       title: const Text('Edit Transaction'),
@@ -82,29 +86,53 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
             ),
             const SizedBox(height: 16),
 
-            // Category (Only for Expenses)
-            if (!isIncome)
-              DropdownButtonFormField<CategoryType>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(labelText: 'Category'),
-                items: const [
-                  DropdownMenuItem(
-                    value: CategoryType.needs,
-                    child: Text('Needs (50%)'),
-                  ),
-                  DropdownMenuItem(
-                    value: CategoryType.wants,
-                    child: Text('Wants (30%)'),
-                  ),
-                  // Savings is usually auto-income, but user might manually categorize expense as savings?
-                  // For now, let's keep it simple.
-                ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedCategory = val);
-                },
-              ),
+            // Category
+            if (isCustom || !isIncome)
+              if (isCustom)
+                DropdownButtonFormField<String>(
+                  value:
+                      budgetProvider.state.categories.any(
+                        (c) => c.id == widget.transaction.categoryId,
+                      )
+                      ? widget.transaction.categoryId
+                      : null,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: budgetProvider.state.categories
+                      .map(
+                        (cat) => DropdownMenuItem(
+                          value: cat.id,
+                          child: Text('${cat.name} (${cat.percentage}%)'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        widget.transaction.categoryId = val;
+                      });
+                    }
+                  },
+                )
+              else
+                DropdownButtonFormField<CategoryType>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: CategoryType.needs,
+                      child: Text('Needs (50%)'),
+                    ),
+                    DropdownMenuItem(
+                      value: CategoryType.wants,
+                      child: Text('Wants (30%)'),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedCategory = val);
+                  },
+                ),
 
-            if (isIncome)
+            if (!isCustom && isIncome)
               const Padding(
                 padding: EdgeInsets.only(bottom: 16.0),
                 child: Text("Income is automatically categorized as Savings."),
@@ -138,11 +166,28 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
 
             final finalAmount = isIncome ? -amount.abs() : amount.abs();
 
+            String? finalCategoryId = widget.transaction.categoryId;
+            CategoryType finalCategoryType = _selectedCategory;
+
+            if (isIncome) {
+              if (isCustom) {
+                // Ensure we have *some* category selected, default to first if somehow null
+                finalCategoryId =
+                    widget.transaction.categoryId ??
+                    (budgetProvider.state.categories.isNotEmpty
+                        ? budgetProvider.state.categories.first.id
+                        : null);
+              } else {
+                finalCategoryType = CategoryType.savings;
+              }
+            }
+
             final updatedTransaction = Transaction(
               finalAmount,
               _tagController.text.trim(),
               _selectedDate,
-              categoryType: isIncome ? CategoryType.savings : _selectedCategory,
+              categoryType: finalCategoryType,
+              categoryId: finalCategoryId,
               id: widget.transaction.id,
             );
 

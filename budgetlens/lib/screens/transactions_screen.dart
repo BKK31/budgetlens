@@ -7,7 +7,9 @@ import '../widgets/edit_transaction_dialog.dart';
 
 class TransactionsScreen extends StatelessWidget {
   final CategoryType? filter;
-  const TransactionsScreen({super.key, this.filter});
+  final String? filterCategoryId;
+
+  const TransactionsScreen({super.key, this.filter, this.filterCategoryId});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +17,9 @@ class TransactionsScreen extends StatelessWidget {
     if (filter != null) {
       title =
           '${filter!.name[0].toUpperCase()}${filter!.name.substring(1)} Transactions';
+    } else if (filterCategoryId != null) {
+      // For custom categories, title will just be Transactions or we can try to look it up
+      // but for simplicity 'Transactions' is fine.
     }
 
     return Scaffold(
@@ -23,9 +28,13 @@ class TransactionsScreen extends StatelessWidget {
         builder: (context, budgetProvider, child) {
           var transactions = budgetProvider.transactions.reversed.toList();
 
-          if (filter != null) {
+          if (filterCategoryId != null) {
             transactions = transactions
-                .where((t) => t.categoryType == filter)
+                .where((t) => t.categoryId == filterCategoryId)
+                .toList();
+          } else if (filter != null) {
+            transactions = transactions
+                .where((t) => t.categoryType == filter && t.categoryId == null)
                 .toList();
           }
 
@@ -108,7 +117,7 @@ class TransactionsScreen extends StatelessWidget {
             // Row 2: Metadata tags
             Row(
               children: [
-                _buildCategoryBadge(transaction.categoryType, context),
+                _buildCategoryBadge(transaction, context, provider),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -129,23 +138,36 @@ class TransactionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryBadge(CategoryType type, BuildContext context) {
-    Color color;
-    String label;
+  Widget _buildCategoryBadge(
+    Transaction transaction,
+    BuildContext context,
+    BudgetProvider provider,
+  ) {
+    Color color = Colors.grey.shade200;
+    String label = 'Unknown';
 
-    switch (type) {
-      case CategoryType.needs:
-        color = Colors.blue.shade100;
-        label = 'Needs';
-        break;
-      case CategoryType.wants:
-        color = Colors.orange.shade100;
-        label = 'Wants';
-        break;
-      case CategoryType.savings:
-        color = Colors.green.shade100;
-        label = 'Savings';
-        break;
+    if (provider.state.isCustomStrategy && transaction.categoryId != null) {
+      final cat = provider.state.categories.firstWhere(
+        (c) => c.id == transaction.categoryId,
+        orElse: () => CustomCategory(id: '', name: 'Unknown', percentage: 0),
+      );
+      label = cat.name;
+      color = cat.isSavings ? Colors.green.shade100 : Colors.blue.shade100;
+    } else {
+      switch (transaction.categoryType) {
+        case CategoryType.needs:
+          color = Colors.blue.shade100;
+          label = 'Needs';
+          break;
+        case CategoryType.wants:
+          color = Colors.orange.shade100;
+          label = 'Wants';
+          break;
+        case CategoryType.savings:
+          color = Colors.green.shade100;
+          label = 'Savings';
+          break;
+      }
     }
 
     return Container(
@@ -159,7 +181,7 @@ class TransactionsScreen extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.black87, // Force dark text on light pastel background
+          color: Colors.black87,
         ),
       ),
     );

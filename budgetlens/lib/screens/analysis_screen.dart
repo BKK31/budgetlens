@@ -14,95 +14,220 @@ class AnalysisScreen extends StatelessWidget {
       body: Consumer<BudgetProvider>(
         builder: (context, provider, child) {
           final state = provider.state;
-          final totalBudget = state.totalBudget; // Base for 50/30/20
+          final totalBudget = state.totalBudget;
 
-          final needsTarget = totalBudget * 0.50;
-          final wantsTarget = totalBudget * 0.30;
-          final savingsTarget = totalBudget * 0.20; // Minimum optimization
+          if (state.isCustomStrategy) {
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                ...state.categories.map((cat) {
+                  final target = totalBudget * (cat.percentage / 100);
 
-          final needsSpent = state.needsSpent;
-          final wantsSpent = state.wantsSpent;
+                  // For savings categories, we show what is "allocated" plus any extra income,
+                  // but for simplicity in custom strategy, let's treat "target" as the base target.
+                  // If it's savings, we add totalIncome to the displayed amount if desired,
+                  // or keep it simple: target vs spent.
+                  // Usually, income isn't "spent", it goes to the pool.
 
-          // Savings = (Allocated 20%) + (Extra Income) - (Any "Savings" expenses? No, we don't spend from savings usually).
-          // Actually, "Savings" in 50/30/20 is what you PUT ASIDE.
-          // So Current Savings = (20% of Budget) + Total Income.
-          // This represents how much has been "saved" or "allocated to savings" this month.
-          // Unless the user explicitly "transfers" it out. We don't track transfers.
-          // So we just show the Potential Savings.
-          final totalSavings = savingsTarget + state.totalIncome;
+                  double amountDisplay = 0;
+                  if (cat.isSavings) {
+                    amountDisplay =
+                        target +
+                        state.totalIncome -
+                        (state.categorySpent[cat.id] ?? 0);
+                  } else {
+                    amountDisplay = state.categorySpent[cat.id] ?? 0;
+                  }
 
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              _buildCategoryCard(
-                context,
-                provider,
-                title: 'Needs (50%)',
-                spent: needsSpent,
-                target: needsTarget,
-                color: Colors.blue,
-                icon: Icons.home,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const TransactionsScreen(filter: CategoryType.needs),
-                    ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: cat.isSavings
+                        ? _buildSavingsCard(
+                            context,
+                            provider,
+                            title: '${cat.name} (${cat.percentage}%)',
+                            amount: amountDisplay,
+                            baseTarget: target,
+                            extraIncome: state.totalIncome,
+                            color: Colors.green,
+                            icon: Icons.savings,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TransactionsScreen(
+                                    filterCategoryId: cat.id,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : _buildCategoryCard(
+                            context,
+                            provider,
+                            title: '${cat.name} (${cat.percentage}%)',
+                            spent: amountDisplay,
+                            target: target,
+                            color: Colors
+                                .blue, // In a real app we might assign colors per category
+                            icon: Icons.category,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TransactionsScreen(
+                                    filterCategoryId: cat.id,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                   );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildCategoryCard(
-                context,
-                provider,
-                title: 'Wants (30%)',
-                spent: wantsSpent,
-                target: wantsTarget,
-                color: Colors.orange,
-                icon: Icons.favorite,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const TransactionsScreen(filter: CategoryType.wants),
+                }),
+                const SizedBox(height: 8),
+                if (!state.categories.any((c) => c.isSavings) &&
+                    state.totalIncome > 0) ...[
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildSavingsCard(
-                context,
-                provider,
-                title: 'Savings & Debt (20%)',
-                amount: totalSavings,
-                baseTarget: savingsTarget,
-                extraIncome: state.totalIncome,
-                color: Colors.green,
-                icon: Icons.savings,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TransactionsScreen(
-                        filter: CategoryType.savings,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.monetization_on,
+                                color: Colors.green,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Total Extra Income',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '${provider.currencySymbol}${state.totalIncome.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Since you haven\'t set up a Savings category, your income offsets your expenses within your selected categories.',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
                       ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                "Note: Income transactions are automatically added to your Savings bucket.",
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (state.categories.any((c) => c.isSavings))
+                  const Text(
+                    "Note: Income transactions are automatically added to your Savings buckets.",
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+            );
+          } else {
+            // Legacy 50/30/20 mode
+            final needsTarget = totalBudget * 0.50;
+            final wantsTarget = totalBudget * 0.30;
+            final savingsTarget = totalBudget * 0.20;
+
+            final needsSpent = state.needsSpent;
+            final wantsSpent = state.wantsSpent;
+            final totalSavings = savingsTarget + state.totalIncome;
+
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                _buildCategoryCard(
+                  context,
+                  provider,
+                  title: 'Needs (50%)',
+                  spent: needsSpent,
+                  target: needsTarget,
+                  color: Colors.blue,
+                  icon: Icons.home,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TransactionsScreen(
+                          filter: CategoryType.needs,
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          );
+                const SizedBox(height: 16),
+                _buildCategoryCard(
+                  context,
+                  provider,
+                  title: 'Wants (30%)',
+                  spent: wantsSpent,
+                  target: wantsTarget,
+                  color: Colors.orange,
+                  icon: Icons.favorite,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TransactionsScreen(
+                          filter: CategoryType.wants,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildSavingsCard(
+                  context,
+                  provider,
+                  title: 'Savings & Debt (20%)',
+                  amount: totalSavings,
+                  baseTarget: savingsTarget,
+                  extraIncome: state.totalIncome,
+                  color: Colors.green,
+                  icon: Icons.savings,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TransactionsScreen(
+                          filter: CategoryType.savings,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Note: Income transactions are automatically added to your Savings bucket.",
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            );
+          }
         },
       ),
     );
@@ -214,7 +339,7 @@ class AnalysisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                '${provider.currencySymbol}.${amount.toStringAsFixed(0)}',
+                '${provider.currencySymbol}${amount.toStringAsFixed(0)}',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
