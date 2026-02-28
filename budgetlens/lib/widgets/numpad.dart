@@ -141,95 +141,115 @@ class _NumpadState extends State<Numpad> {
     CategoryType categoryType = CategoryType.needs,
     String? categoryId,
   }) {
-    final tagController = TextEditingController();
+    String selectedSubCategory = Transaction.subCategories.first;
+    final remarksController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        final uniqueTags = budgetProvider.uniqueTags;
-
-        return AlertDialog(
-          title: const Text('Add a tag'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: tagController,
-                  decoration: const InputDecoration(
-                    hintText: "e.g., Food, Shopping",
-                  ),
-                  autofocus: true,
-                ),
-                const SizedBox(height: 16),
-                if (uniqueTags.isNotEmpty) ...[
-                  const Text("Suggestions"),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8.0,
-                    children: uniqueTags.map((tag) {
-                      return ActionChip(
-                        label: Text(tag),
-                        onPressed: () {
-                          tagController.text = tag;
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                String tag = tagController.text.trim();
-                if (tag.isEmpty) {
-                  tag = 'default';
-                }
-
-                budgetProvider.recordTransaction(
-                  amount,
-                  tag,
-                  categoryType: categoryType,
-                  categoryId: categoryId,
-                );
-
-                budgetProvider.updatePreview(0, false);
-                setState(() {
-                  _currentInput = '';
-                  _isIncome = false;
-                });
-                Navigator.of(dialogContext).pop();
-
-                // Feedback for Income/Savings
-                if (categoryId != null) {
-                  final cat = budgetProvider.state.categories.firstWhere(
-                    (c) => c.id == categoryId,
-                    orElse: () => CustomCategory(
-                      id: '',
-                      name: 'Selected Category',
-                      percentage: 0,
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Transaction Details'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Category',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Added to ${cat.name}')),
-                  );
-                } else if (categoryType == CategoryType.savings) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Added to Savings (20%)')),
-                  );
-                }
-              },
-              child: const Text('OK'),
-            ),
-          ],
+                    const SizedBox(height: 4),
+                    DropdownButtonFormField<String>(
+                      value: selectedSubCategory,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                      items: Transaction.subCategories.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          setDialogState(() {
+                            selectedSubCategory = newValue;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Remarks',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 4),
+                    TextField(
+                      controller: remarksController,
+                      decoration: const InputDecoration(
+                        hintText: "Add details here...",
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String remarks = remarksController.text.trim();
+
+                    budgetProvider.recordTransaction(
+                      amount,
+                      selectedSubCategory, // Using subCategory as the 'tag' for legacy compatibility where needed
+                      subCategory: selectedSubCategory,
+                      remarks: remarks,
+                      categoryType: categoryType,
+                      categoryId: categoryId,
+                    );
+
+                    budgetProvider.updatePreview(0, false);
+                    setState(() {
+                      _currentInput = '';
+                      _isIncome = false;
+                    });
+                    Navigator.of(dialogContext).pop();
+
+                    // Feedback
+                    if (categoryId != null) {
+                      final cat = budgetProvider.state.categories.firstWhere(
+                        (c) => c.id == categoryId,
+                        orElse: () => CustomCategory(
+                          id: '',
+                          name: 'Selected Category',
+                          percentage: 0,
+                        ),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Added to ${cat.name}')),
+                      );
+                    } else if (categoryType == CategoryType.savings) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to Savings (20%)')),
+                      );
+                    }
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

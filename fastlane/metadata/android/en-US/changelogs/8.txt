@@ -1,0 +1,6 @@
+- Added Fixed-Amount Budgeting: You can now set categories with either a fixed amount or a percentage.
+- Introduced Sub-categories: Choose from a global list of sub-categories for every transaction.
+- Added Remarks: Detail your spending with a dedicated remarks field.
+- Redesigned Category Setup: New "Remaining" button to automatically fill unallocated budget.
+- Refined Dashboard: Balanced the interface by showing the budget exclusively in the top pill.
+- Enhanced Precision: Full double precision support across all budget and transaction displays.

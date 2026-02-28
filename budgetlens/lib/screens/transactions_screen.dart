@@ -120,10 +120,27 @@ class TransactionsScreen extends StatelessWidget {
                 _buildCategoryBadge(transaction, context, provider),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    transaction.tag,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.subCategory,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (transaction.remarks.isNotEmpty)
+                        Text(
+                          transaction.remarks,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
                   ),
                 ),
                 Text(
@@ -241,7 +258,7 @@ class TransactionsScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Transaction?'),
         content: Text(
-          'Are you sure you want to delete "${transaction.tag}" of ${provider.currencySymbol}${transaction.amount.abs()}?',
+          'Are you sure you want to delete "${transaction.subCategory}${transaction.remarks.isNotEmpty ? ': ' + transaction.remarks : ''}" of ${provider.currencySymbol}${transaction.amount.abs()}?',
         ),
         actions: [
           TextButton(

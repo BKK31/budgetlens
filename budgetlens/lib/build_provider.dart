@@ -92,6 +92,8 @@ class BudgetProvider extends ChangeNotifier {
   void recordTransaction(
     double amount,
     String tag, {
+    String subCategory = 'Other',
+    String remarks = '',
     CategoryType categoryType = CategoryType.needs,
     String? categoryId,
   }) {
@@ -100,6 +102,8 @@ class BudgetProvider extends ChangeNotifier {
       amount,
       tag,
       DateTime.now(),
+      subCategory: subCategory,
+      remarks: remarks,
       categoryType: categoryType,
       categoryId: categoryId,
     );
@@ -201,6 +205,8 @@ class BudgetProvider extends ChangeNotifier {
         'id': t.id,
         'amount': t.amount,
         'tag': t.tag,
+        'subCategory': t.subCategory,
+        'remarks': t.remarks,
         'datetime': t.datetime.toString(),
         'categoryType': t.categoryType.index, // Save index for simplicity
         'categoryId': t.categoryId, // Save new id reference
@@ -221,6 +227,8 @@ class BudgetProvider extends ChangeNotifier {
           t['amount'] as double,
           t['tag'] as String,
           DateTime.parse(t['datetime'] as String),
+          subCategory: t['subCategory'] as String? ?? 'Other',
+          remarks: t['remarks'] as String? ?? (t['tag'] as String? ?? ''),
           categoryType: t['categoryType'] != null
               ? CategoryType.values[t['categoryType'] as int]
               : CategoryType.needs, // Default for legacy
@@ -313,6 +321,8 @@ class BudgetProvider extends ChangeNotifier {
           'id': t.id,
           'amount': t.amount,
           'tag': t.tag,
+          'subCategory': t.subCategory,
+          'remarks': t.remarks,
           'datetime': t.datetime.toString(),
           'categoryType': t.categoryType.index,
           'categoryId': t.categoryId,
@@ -355,6 +365,8 @@ class BudgetProvider extends ChangeNotifier {
           t['amount'] as double,
           t['tag'] as String,
           DateTime.parse(t['datetime'] as String),
+          subCategory: t['subCategory'] as String? ?? 'Other',
+          remarks: t['remarks'] as String? ?? (t['tag'] as String? ?? ''),
           categoryType: t['categoryType'] != null
               ? CategoryType.values[t['categoryType'] as int]
               : CategoryType.needs,
@@ -383,6 +395,8 @@ class BudgetProvider extends ChangeNotifier {
           'id': t.id,
           'amount': t.amount,
           'tag': t.tag,
+          'subCategory': t.subCategory,
+          'remarks': t.remarks,
           'datetime': t.datetime.toString(),
           'categoryType': t.categoryType.index,
           'categoryId': t.categoryId,

@@ -2,18 +2,34 @@ import 'models.dart';
 
 class BudgetCalculator {
   double getRemainingBudget(BudgetState state) {
-    double spendablePercentage = 0.8; // Default 50/30/20 spendable is 80%
-
-    if (state.isCustomStrategy && state.categories.isNotEmpty) {
-      // Calculate spendable percentage by summing non-savings categories
-      double nonSavingsTotal = state.categories
-          .where((cat) => !cat.isSavings)
-          .fold(0.0, (sum, cat) => sum + cat.percentage);
-      spendablePercentage = nonSavingsTotal / 100.0;
+    if (!state.isCustomStrategy) {
+      // Legacy 50/30/20 spendable is 80% (Needs + Wants)
+      return (state.totalBudget * 0.8) - state.totalSpent;
     }
 
-    double spendableBudget = state.totalBudget * spendablePercentage;
-    return spendableBudget - state.totalSpent;
+    if (state.categories.isEmpty) {
+      return state.totalBudget - state.totalSpent;
+    }
+
+    // Custom Strategy
+    double fixedAllocation = 0.0;
+    double percentageAllocationSum = 0.0;
+
+    for (var cat in state.categories) {
+      if (!cat.isSavings) {
+        if (cat.amount != null) {
+          fixedAllocation += cat.amount!;
+        } else {
+          percentageAllocationSum += cat.percentage;
+        }
+      }
+    }
+
+    double percentageBasedAllocation =
+        state.totalBudget * (percentageAllocationSum / 100.0);
+    double totalSpendableBudget = fixedAllocation + percentageBasedAllocation;
+
+    return totalSpendableBudget - state.totalSpent;
   }
 
   int getDaysRemaining(BudgetState state) {

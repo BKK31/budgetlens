@@ -21,13 +21,8 @@ class AnalysisScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               children: [
                 ...state.categories.map((cat) {
-                  final target = totalBudget * (cat.percentage / 100);
-
-                  // For savings categories, we show what is "allocated" plus any extra income,
-                  // but for simplicity in custom strategy, let's treat "target" as the base target.
-                  // If it's savings, we add totalIncome to the displayed amount if desired,
-                  // or keep it simple: target vs spent.
-                  // Usually, income isn't "spent", it goes to the pool.
+                  final target =
+                      cat.amount ?? (totalBudget * (cat.percentage / 100));
 
                   double amountDisplay = 0;
                   if (cat.isSavings) {
@@ -39,13 +34,25 @@ class AnalysisScreen extends StatelessWidget {
                     amountDisplay = state.categorySpent[cat.id] ?? 0;
                   }
 
+                  String categoryLabel = cat.name;
+                  if (cat.amount != null) {
+                    double calculatedPercent = totalBudget > 0
+                        ? (cat.amount! / totalBudget * 100)
+                        : 0;
+                    categoryLabel +=
+                        ' (${provider.currencySymbol}${cat.amount!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} - ${calculatedPercent.toStringAsFixed(1)}%)';
+                  } else {
+                    categoryLabel +=
+                        ' (${cat.percentage.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}%)';
+                  }
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: cat.isSavings
                         ? _buildSavingsCard(
                             context,
                             provider,
-                            title: '${cat.name} (${cat.percentage}%)',
+                            title: categoryLabel,
                             amount: amountDisplay,
                             baseTarget: target,
                             extraIncome: state.totalIncome,
@@ -65,7 +72,7 @@ class AnalysisScreen extends StatelessWidget {
                         : _buildCategoryCard(
                             context,
                             provider,
-                            title: '${cat.name} (${cat.percentage}%)',
+                            title: categoryLabel,
                             spent: amountDisplay,
                             target: target,
                             color: Colors
@@ -114,7 +121,7 @@ class AnalysisScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '${provider.currencySymbol}${state.totalIncome.toStringAsFixed(0)}',
+                            '${provider.currencySymbol}${state.totalIncome.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -269,7 +276,7 @@ class AnalysisScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    '${provider.currencySymbol}${spent.toStringAsFixed(0)} / ${provider.currencySymbol}${target.toStringAsFixed(0)}',
+                    '${provider.currencySymbol}${spent.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} / ${provider.currencySymbol}${target.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -289,8 +296,8 @@ class AnalysisScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 isOverBudget
-                    ? 'Over budget by ${provider.currencySymbol}${(spent - target).toStringAsFixed(0)}'
-                    : '${provider.currencySymbol}${(target - spent).toStringAsFixed(0)} remaining',
+                    ? 'Over budget by ${provider.currencySymbol}${(spent - target).toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}'
+                    : '${provider.currencySymbol}${(target - spent).toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} remaining',
                 style: TextStyle(
                   color: isOverBudget ? Colors.red : Colors.grey[600],
                   fontWeight: FontWeight.w500,
@@ -339,7 +346,7 @@ class AnalysisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                '${provider.currencySymbol}${amount.toStringAsFixed(0)}',
+                '${provider.currencySymbol}${amount.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -348,7 +355,7 @@ class AnalysisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Includes 20% allocation (${provider.currencySymbol}${baseTarget.toStringAsFixed(0)}) + Extra Income (${provider.currencySymbol}${extraIncome.toStringAsFixed(0)})',
+                'Includes allocation (${provider.currencySymbol}${baseTarget.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}) + Extra Income (${provider.currencySymbol}${extraIncome.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')})',
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],
