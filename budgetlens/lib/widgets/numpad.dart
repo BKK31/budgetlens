@@ -51,52 +51,96 @@ class _NumpadState extends State<Numpad> {
     double? amount = double.tryParse(_currentInput);
     if (amount == null) return;
 
-    if (_isIncome) {
-      // Income -> Automatically Savings.
-      // Confirm Tag? User request: "When user adds an income, it should go to the 20% budget."
-      // Assuming we still want to tag it (e.g. Salary, Gift).
-      // Pass negative amount for income
-      _showTagDialog(budgetProvider, -amount, CategoryType.savings);
-    } else {
-      // Expense -> Select Needs or Wants
+    if (budgetProvider.state.isCustomStrategy) {
+      // Custom Strategy -> Select from Custom Categories for BOTH income and expense
       showDialog(
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: const Text('Select Category'),
-            children: [
-              SimpleDialogOption(
+            title: Text(
+              _isIncome ? 'Select Category for Income' : 'Select Category',
+            ),
+            children: budgetProvider.state.categories.map((cat) {
+              return SimpleDialogOption(
                 onPressed: () {
                   Navigator.pop(context);
-                  _showTagDialog(budgetProvider, amount, CategoryType.needs);
+                  _showTagDialog(
+                    budgetProvider,
+                    _isIncome ? -amount : amount,
+                    categoryId: cat.id,
+                  );
                 },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Needs (50%)', style: TextStyle(fontSize: 18)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    '${cat.name} (${cat.percentage}%)',
+                    style: const TextStyle(fontSize: 18),
+                  ),
                 ),
-              ),
-              SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _showTagDialog(budgetProvider, amount, CategoryType.wants);
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Wants (30%)', style: TextStyle(fontSize: 18)),
-                ),
-              ),
-            ],
+              );
+            }).toList(),
           );
         },
       );
+    } else {
+      // Legacy 50/30/20 Strategy
+      if (_isIncome) {
+        // Income -> Automatically Savings.
+        _showTagDialog(
+          budgetProvider,
+          -amount,
+          categoryType: CategoryType.savings,
+        );
+      } else {
+        // Legacy Expense -> Select Needs or Wants
+        showDialog(
+          context: context,
+          builder: (context) {
+            return SimpleDialog(
+              title: const Text('Select Category'),
+              children: [
+                SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showTagDialog(
+                      budgetProvider,
+                      amount,
+                      categoryType: CategoryType.needs,
+                    );
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Needs (50%)', style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+                SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showTagDialog(
+                      budgetProvider,
+                      amount,
+                      categoryType: CategoryType.wants,
+                    );
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Wants (30%)', style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 
   void _showTagDialog(
     BudgetProvider budgetProvider,
-    double amount,
-    CategoryType categoryType,
-  ) {
+    double amount, {
+    CategoryType categoryType = CategoryType.needs,
+    String? categoryId,
+  }) {
     final tagController = TextEditingController();
 
     showDialog(
@@ -154,6 +198,7 @@ class _NumpadState extends State<Numpad> {
                   amount,
                   tag,
                   categoryType: categoryType,
+                  categoryId: categoryId,
                 );
 
                 budgetProvider.updatePreview(0, false);
@@ -164,7 +209,19 @@ class _NumpadState extends State<Numpad> {
                 Navigator.of(dialogContext).pop();
 
                 // Feedback for Income/Savings
-                if (categoryType == CategoryType.savings) {
+                if (categoryId != null) {
+                  final cat = budgetProvider.state.categories.firstWhere(
+                    (c) => c.id == categoryId,
+                    orElse: () => CustomCategory(
+                      id: '',
+                      name: 'Selected Category',
+                      percentage: 0,
+                    ),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Added to ${cat.name}')),
+                  );
+                } else if (categoryType == CategoryType.savings) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Added to Savings (20%)')),
                   );

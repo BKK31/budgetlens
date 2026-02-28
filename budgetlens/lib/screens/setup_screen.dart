@@ -5,6 +5,7 @@ import '../currency_data.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
 import 'dart:io';
+import 'category_setup_screen.dart';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
@@ -41,7 +42,7 @@ class _SetupScreenState extends State<SetupScreen> {
         // Sort currencies alphabetically
         final sortedCurrencies = _currencySymbols.keys.toList();
         sortedCurrencies.sort();
-        
+
         return SimpleDialog(
           title: const Text('Select Currency'),
           children: sortedCurrencies.map((currencyCode) {
@@ -200,19 +201,18 @@ class _SetupScreenState extends State<SetupScreen> {
                     double budget = double.parse(budgetController.text);
 
                     // Wait for this to complete!
-                    await Provider.of<BudgetProvider>(
-                      context,
-                      listen: false,
-                    ).saveBudgetSetup(
-                      budget,
-                      selectedStartDate,
-                      selectedEndDate!,
-                      currencyCode: _selectedCurrencyCode,
-                    );
-
-                    // Only navigate after it's saved
                     if (context.mounted) {
-                      Navigator.of(context).pushReplacementNamed('/');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategorySetupScreen(
+                            budget: budget,
+                            startDate: selectedStartDate,
+                            endDate: selectedEndDate!,
+                            currencyCode: _selectedCurrencyCode,
+                          ),
+                        ),
+                      );
                     }
                   },
                   child: Text('Apply'),
@@ -236,7 +236,7 @@ class _SetupScreenState extends State<SetupScreen> {
                           context,
                           listen: false,
                         ).readBackupFile(filePath);
-                        
+
                         if (context.mounted) {
                           await Provider.of<BudgetProvider>(
                             context,

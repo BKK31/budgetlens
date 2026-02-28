@@ -2,9 +2,17 @@ import 'models.dart';
 
 class BudgetCalculator {
   double getRemainingBudget(BudgetState state) {
-    // 50/30/20 Rule: Only 80% is spendable (Needs + Wants).
-    // Savings (20%) + Income is handled separately.
-    double spendableBudget = state.totalBudget * 0.8;
+    double spendablePercentage = 0.8; // Default 50/30/20 spendable is 80%
+
+    if (state.isCustomStrategy && state.categories.isNotEmpty) {
+      // Calculate spendable percentage by summing non-savings categories
+      double nonSavingsTotal = state.categories
+          .where((cat) => !cat.isSavings)
+          .fold(0.0, (sum, cat) => sum + cat.percentage);
+      spendablePercentage = nonSavingsTotal / 100.0;
+    }
+
+    double spendableBudget = state.totalBudget * spendablePercentage;
     return spendableBudget - state.totalSpent;
   }
 

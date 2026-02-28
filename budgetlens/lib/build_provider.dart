@@ -93,6 +93,7 @@ class BudgetProvider extends ChangeNotifier {
     double amount,
     String tag, {
     CategoryType categoryType = CategoryType.needs,
+    String? categoryId,
   }) {
     checkAndResetForNewDay();
     Transaction newTransaction = Transaction(
@@ -100,6 +101,7 @@ class BudgetProvider extends ChangeNotifier {
       tag,
       DateTime.now(),
       categoryType: categoryType,
+      categoryId: categoryId,
     );
     transactions.add(newTransaction);
     if (amount < 0) {
@@ -109,11 +111,20 @@ class BudgetProvider extends ChangeNotifier {
       // Expense
       state.totalSpent += amount;
       state.todaysSpend += amount;
-      if (categoryType == CategoryType.needs) {
-        state.needsSpent += amount;
-      } else if (categoryType == CategoryType.wants) {
-        state.wantsSpent += amount;
+
+      if (!state.isCustomStrategy) {
+        if (categoryType == CategoryType.needs) {
+          state.needsSpent += amount;
+        } else if (categoryType == CategoryType.wants) {
+          state.wantsSpent += amount;
+        }
       }
+    }
+
+    if (state.isCustomStrategy && categoryId != null) {
+      state.categorySpent[categoryId] =
+          (state.categorySpent[categoryId] ?? 0) +
+          amount; // Positive amount adds to spent, negative reduces spent
     }
     saveTransactions();
     notifyListeners();
@@ -141,15 +152,26 @@ class BudgetProvider extends ChangeNotifier {
     DateTime startDate,
     DateTime endDate, {
     String currencyCode = 'INR',
+    bool isCustomStrategy = false,
+    List<CustomCategory>? categories,
   }) async {
     state.totalBudget = budget;
     state.budgetStartDate = startDate;
     state.budgetEndDate = endDate;
     state.currencyCode = currencyCode;
+    state.isCustomStrategy = isCustomStrategy;
+
+    if (isCustomStrategy && categories != null) {
+      state.categories = categories;
+    } else {
+      state.categories = [];
+    }
+
     state.totalSpent = 0.0;
     state.totalIncome = 0.0;
     state.needsSpent = 0.0;
     state.wantsSpent = 0.0;
+    state.categorySpent.clear();
     state.todaysSpend = 0.0;
     state.lastTransactionDay = DateTime.now().day;
     transactions.clear();
@@ -160,6 +182,13 @@ class BudgetProvider extends ChangeNotifier {
     await prefs.setString('startDate', startDate.toString());
     await prefs.setString('endDate', endDate.toString());
     await prefs.setString('currencyCode', currencyCode);
+    await prefs.setBool('isCustomStrategy', state.isCustomStrategy);
+    if (state.isCustomStrategy) {
+      await prefs.setString(
+        'customCategories',
+        jsonEncode(state.categories.map((c) => c.toJson()).toList()),
+      );
+    }
 
     await markLaunchComplete();
     notifyListeners();
@@ -174,6 +203,7 @@ class BudgetProvider extends ChangeNotifier {
         'tag': t.tag,
         'datetime': t.datetime.toString(),
         'categoryType': t.categoryType.index, // Save index for simplicity
+        'categoryId': t.categoryId, // Save new id reference
       };
     }).toList();
 
@@ -194,6 +224,7 @@ class BudgetProvider extends ChangeNotifier {
           categoryType: t['categoryType'] != null
               ? CategoryType.values[t['categoryType'] as int]
               : CategoryType.needs, // Default for legacy
+          categoryId: t['categoryId'] as String?,
           id: t['id'] as String?,
         );
       }).toList();
@@ -209,6 +240,18 @@ class BudgetProvider extends ChangeNotifier {
     final savedStartDate = prefs.getString('startDate');
     final savedEndDate = prefs.getString('endDate');
     final savedCurrency = prefs.getString('currencyCode');
+
+    // Load custom strategy
+    state.isCustomStrategy = prefs.getBool('isCustomStrategy') ?? false;
+    if (state.isCustomStrategy) {
+      final customCatsStr = prefs.getString('customCategories');
+      if (customCatsStr != null) {
+        final List<dynamic> decoded = jsonDecode(customCatsStr);
+        state.categories = decoded
+            .map((c) => CustomCategory.fromJson(c))
+            .toList();
+      }
+    }
 
     if (savedBudget != null && savedStartDate != null && savedEndDate != null) {
       state.totalBudget = savedBudget;
@@ -263,6 +306,8 @@ class BudgetProvider extends ChangeNotifier {
       'startDate': state.budgetStartDate.toString(),
       'endDate': state.budgetEndDate.toString(),
       'currencyCode': state.currencyCode,
+      'isCustomStrategy': state.isCustomStrategy,
+      'customCategories': state.categories.map((c) => c.toJson()).toList(),
       'transactions': transactions.map((t) {
         return {
           'id': t.id,
@@ -270,6 +315,7 @@ class BudgetProvider extends ChangeNotifier {
           'tag': t.tag,
           'datetime': t.datetime.toString(),
           'categoryType': t.categoryType.index,
+          'categoryId': t.categoryId,
         };
       }).toList(),
     };
@@ -292,6 +338,16 @@ class BudgetProvider extends ChangeNotifier {
       final newStartDate = DateTime.parse(decoded['startDate'] as String);
       final newEndDate = DateTime.parse(decoded['endDate'] as String);
       final newCurrency = decoded['currencyCode'] as String? ?? 'INR';
+
+      final isCustomStrategy = decoded['isCustomStrategy'] as bool? ?? false;
+      List<CustomCategory> customCategories = [];
+      if (isCustomStrategy && decoded['customCategories'] != null) {
+        final List<dynamic> catJson = decoded['customCategories'];
+        customCategories = catJson
+            .map((c) => CustomCategory.fromJson(c))
+            .toList();
+      }
+
       final List<dynamic> newTransactionsJson = decoded['transactions'];
 
       final newTransactions = newTransactionsJson.map((t) {
@@ -302,6 +358,7 @@ class BudgetProvider extends ChangeNotifier {
           categoryType: t['categoryType'] != null
               ? CategoryType.values[t['categoryType'] as int]
               : CategoryType.needs,
+          categoryId: t['categoryId'] as String?,
           id: t['id'] as String?,
         );
       }).toList();
@@ -312,6 +369,13 @@ class BudgetProvider extends ChangeNotifier {
       await prefs.setString('startDate', newStartDate.toString());
       await prefs.setString('endDate', newEndDate.toString());
       await prefs.setString('currencyCode', newCurrency);
+      await prefs.setBool('isCustomStrategy', isCustomStrategy);
+      if (isCustomStrategy) {
+        await prefs.setString(
+          'customCategories',
+          jsonEncode(customCategories.map((c) => c.toJson()).toList()),
+        );
+      }
 
       // Save transactions directly
       final transactionData = newTransactions.map((t) {
@@ -321,6 +385,7 @@ class BudgetProvider extends ChangeNotifier {
           'tag': t.tag,
           'datetime': t.datetime.toString(),
           'categoryType': t.categoryType.index,
+          'categoryId': t.categoryId,
         };
       }).toList();
       await prefs.setString('transactions', jsonEncode(transactionData));
@@ -364,13 +429,21 @@ class BudgetProvider extends ChangeNotifier {
         .where((t) => t.amount < 0)
         .fold(0, (sum, t) => sum + t.amount.abs());
 
-    state.needsSpent = validTransactions
-        .where((t) => t.amount > 0 && t.categoryType == CategoryType.needs)
-        .fold(0, (sum, t) => sum + t.amount);
+    if (state.isCustomStrategy) {
+      state.categorySpent.clear();
+      for (var t in validTransactions.where((t) => t.categoryId != null)) {
+        state.categorySpent[t.categoryId!] =
+            (state.categorySpent[t.categoryId!] ?? 0) + t.amount;
+      }
+    } else {
+      state.needsSpent = validTransactions
+          .where((t) => t.amount > 0 && t.categoryType == CategoryType.needs)
+          .fold(0, (sum, t) => sum + t.amount);
 
-    state.wantsSpent = validTransactions
-        .where((t) => t.amount > 0 && t.categoryType == CategoryType.wants)
-        .fold(0, (sum, t) => sum + t.amount);
+      state.wantsSpent = validTransactions
+          .where((t) => t.amount > 0 && t.categoryType == CategoryType.wants)
+          .fold(0, (sum, t) => sum + t.amount);
+    }
 
     notifyListeners();
   }
