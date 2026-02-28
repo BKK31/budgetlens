@@ -53,7 +53,19 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
   }
 
   double get totalPercentage {
-    return categories.fold(0.0, (sum, cat) => sum + cat.percentage);
+    return categories
+        .where((cat) => cat.amount == null)
+        .fold(0.0, (sum, cat) => sum + cat.percentage);
+  }
+
+  double get totalFixedAmount {
+    return categories
+        .where((cat) => cat.amount != null)
+        .fold(0.0, (sum, cat) => sum + cat.amount!);
+  }
+
+  double get totalAllocation {
+    return totalFixedAmount + (widget.budget * (totalPercentage / 100.0));
   }
 
   void _addCategory() {
@@ -61,10 +73,20 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
       context: context,
       builder: (context) {
         String name = '';
-        double percentage = 0;
+        double value = 0;
+        bool isFixedAmount = false;
         bool isSavings = false;
+        final valueController = TextEditingController();
+
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            double currentAllocation = totalAllocation;
+            double remaining = widget.budget - currentAllocation;
+            // The remaining percentage should be based on the actual remaining budget
+            double remainingPercent = widget.budget > 0
+                ? (remaining / widget.budget * 100)
+                : 0;
+
             return AlertDialog(
               title: const Text('Add Category'),
               content: Column(
@@ -74,10 +96,64 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                     decoration: const InputDecoration(labelText: 'Name'),
                     onChanged: (val) => name = val,
                   ),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Percentage'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (val) => percentage = double.tryParse(val) ?? 0,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: valueController,
+                          decoration: InputDecoration(
+                            labelText: isFixedAmount ? 'Amount' : 'Percentage',
+                            prefixText: isFixedAmount
+                                ? widget.currencyCode + ' '
+                                : null,
+                            suffixText: isFixedAmount ? null : '%',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          onChanged: (val) => value = double.tryParse(val) ?? 0,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () {
+                          setStateDialog(() {
+                            if (isFixedAmount) {
+                              value = remaining > 0 ? remaining : 0;
+                            } else {
+                              value = remainingPercent > 0
+                                  ? remainingPercent
+                                  : 0;
+                            }
+                            valueController.text = value
+                                .toStringAsFixed(2)
+                                .replaceAll(RegExp(r'\.?0+$'), '');
+                          });
+                        },
+                        child: const Text(
+                          'Remaining',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Fixed Amount?'),
+                      Switch(
+                        value: isFixedAmount,
+                        onChanged: (val) {
+                          setStateDialog(() {
+                            isFixedAmount = val;
+                            value = 0;
+                            valueController.clear();
+                          });
+                        },
+                      ),
+                    ],
                   ),
                   CheckboxListTile(
                     title: const Text('Is Savings?'),
@@ -87,6 +163,7 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                         isSavings = val ?? false;
                       });
                     },
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ],
               ),
@@ -97,13 +174,14 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    if (name.isNotEmpty && percentage > 0) {
+                    if (name.isNotEmpty && value > 0) {
                       setState(() {
                         categories.add(
                           CustomCategory(
                             id: const Uuid().v4(),
                             name: name,
-                            percentage: percentage,
+                            percentage: isFixedAmount ? 0 : value,
+                            amount: isFixedAmount ? value : null,
                             isSavings: isSavings,
                           ),
                         );
@@ -122,9 +200,15 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
   }
 
   Future<void> _finishSetup() async {
-    if (isCustomStrategy && totalPercentage != 100) {
+    final tolerance = 0.05; // Slightly larger tolerance for floating point
+    double allocation = totalAllocation;
+    if (isCustomStrategy && (allocation - widget.budget).abs() > tolerance) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Total percentage must be exactly 100%')),
+        SnackBar(
+          content: Text(
+            'Total allocation (${allocation.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}) must match budget (${widget.budget.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')})',
+          ),
+        ),
       );
       return;
     }
@@ -164,9 +248,7 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
               ),
               RadioListTile<bool>(
                 title: const Text('Custom Strategy'),
-                subtitle: const Text(
-                  'Create your own categories & percentages',
-                ),
+                subtitle: const Text('Create your own categories & amounts'),
                 value: true,
                 groupValue: isCustomStrategy,
                 onChanged: (val) {
@@ -185,14 +267,28 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'Total: ${totalPercentage.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        color: totalPercentage == 100
-                            ? Colors.green
-                            : Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Total: ${totalAllocation.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} / ${widget.budget.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
+                          style: TextStyle(
+                            color:
+                                (totalAllocation - widget.budget).abs() < 0.01
+                                ? Colors.green
+                                : Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if ((totalAllocation - widget.budget).abs() >= 0.01)
+                          Text(
+                            'Remaining: ${(widget.budget - totalAllocation).toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -202,10 +298,16 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final cat = categories[index];
+                      double calculatedPercent = cat.amount != null
+                          ? (cat.amount! / widget.budget * 100)
+                          : cat.percentage;
+                      String displayValue = cat.amount != null
+                          ? '${widget.currencyCode} ${cat.amount!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} (${calculatedPercent.toStringAsFixed(1)}%)'
+                          : '${cat.percentage.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}%';
                       return ListTile(
                         title: Text(cat.name),
                         subtitle: Text(
-                          '${cat.percentage}% ${cat.isSavings ? "(Savings)" : "(Expense)"}',
+                          '$displayValue ${cat.isSavings ? "(Savings)" : "(Expense)"}',
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),

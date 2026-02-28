@@ -4,12 +4,14 @@ class CustomCategory {
   String id;
   String name;
   double percentage;
+  double? amount; // Optional fixed amount
   bool isSavings;
 
   CustomCategory({
     required this.id,
     required this.name,
     required this.percentage,
+    this.amount,
     this.isSavings = false,
   });
 
@@ -17,6 +19,7 @@ class CustomCategory {
     'id': id,
     'name': name,
     'percentage': percentage,
+    'amount': amount,
     'isSavings': isSavings,
   };
 
@@ -24,6 +27,7 @@ class CustomCategory {
     id: json['id'],
     name: json['name'],
     percentage: json['percentage'],
+    amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
     isSavings: json['isSavings'] ?? false,
   );
 }
@@ -55,7 +59,9 @@ enum CategoryType { needs, wants, savings }
 class Transaction {
   String id;
   double amount;
-  String tag;
+  String tag; // Kept for backward compatibility, will store remarks
+  String subCategory;
+  String remarks;
   DateTime datetime;
 
   // Legacy enum
@@ -68,8 +74,26 @@ class Transaction {
     this.amount,
     this.tag,
     this.datetime, {
+    this.subCategory = 'Other',
+    this.remarks = '',
     this.categoryType = CategoryType.needs,
     this.categoryId,
     String? id,
   }) : id = id ?? const Uuid().v4();
+
+  static const List<String> subCategories = [
+    'Food',
+    'Rent/Home',
+    'Utilities',
+    'Transport',
+    'Health',
+    'Shopping',
+    'Entertainment',
+    'Travel',
+    'Education',
+    'Gift',
+    'Investment',
+    'Savings',
+    'Other',
+  ];
 }

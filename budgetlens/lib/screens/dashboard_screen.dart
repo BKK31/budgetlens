@@ -4,7 +4,6 @@ import 'package:budgetlens/widgets/numpad.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
-import '../widgets/display_amount.dart';
 import '../widgets/header_pill.dart';
 import '../widgets/expiration_dialog.dart';
 
@@ -72,7 +71,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-            const DisplayAmount(),
             const Spacer(),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.60,

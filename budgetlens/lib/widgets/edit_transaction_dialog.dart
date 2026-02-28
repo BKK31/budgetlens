@@ -15,9 +15,10 @@ class EditTransactionDialog extends StatefulWidget {
 
 class _EditTransactionDialogState extends State<EditTransactionDialog> {
   late TextEditingController _amountController;
-  late TextEditingController _tagController;
+  late TextEditingController _remarksController;
   late DateTime _selectedDate;
   late CategoryType _selectedCategory;
+  late String _selectedSubCategory;
 
   @override
   void initState() {
@@ -25,15 +26,18 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
     _amountController = TextEditingController(
       text: widget.transaction.amount.abs().toString(),
     );
-    _tagController = TextEditingController(text: widget.transaction.tag);
+    _remarksController = TextEditingController(
+      text: widget.transaction.remarks,
+    );
     _selectedDate = widget.transaction.datetime;
     _selectedCategory = widget.transaction.categoryType;
+    _selectedSubCategory = widget.transaction.subCategory;
   }
 
   @override
   void dispose() {
     _amountController.dispose();
-    _tagController.dispose();
+    _remarksController.dispose();
     super.dispose();
   }
 
@@ -68,26 +72,28 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Amount
             TextField(
               controller: _amountController,
-              decoration: const InputDecoration(labelText: 'Amount'),
+              decoration: const InputDecoration(
+                labelText: 'Amount',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
             ),
             const SizedBox(height: 16),
 
-            // Tag
-            TextField(
-              controller: _tagController,
-              decoration: const InputDecoration(labelText: 'Tag / Remark'),
-            ),
-            const SizedBox(height: 16),
-
-            // Category
-            if (isCustom || !isIncome)
+            // Main Category
+            if (isCustom || !isIncome) ...[
+              const Text(
+                'Main Category',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 4),
               if (isCustom)
                 DropdownButtonFormField<String>(
                   value:
@@ -96,12 +102,14 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
                       )
                       ? widget.transaction.categoryId
                       : null,
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
                   items: budgetProvider.state.categories
                       .map(
                         (cat) => DropdownMenuItem(
                           value: cat.id,
-                          child: Text('${cat.name} (${cat.percentage}%)'),
+                          child: Text('${cat.name}'),
                         ),
                       )
                       .toList(),
@@ -116,7 +124,9 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
               else
                 DropdownButtonFormField<CategoryType>(
                   value: _selectedCategory,
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
                   items: const [
                     DropdownMenuItem(
                       value: CategoryType.needs,
@@ -131,10 +141,52 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
                     if (val != null) setState(() => _selectedCategory = val);
                   },
                 ),
+              const SizedBox(height: 16),
+            ],
+
+            // Sub Category
+            const Text(
+              'Sub Category',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            DropdownButtonFormField<String>(
+              value: _selectedSubCategory,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: Transaction.subCategories.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedSubCategory = newValue;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Remarks
+            const Text(
+              'Remarks',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            TextField(
+              controller: _remarksController,
+              decoration: const InputDecoration(
+                hintText: "Add details here...",
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
 
             if (!isCustom && isIncome)
               const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
+                padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Text("Income is automatically categorized as Savings."),
               ),
 
@@ -171,7 +223,6 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
 
             if (isIncome) {
               if (isCustom) {
-                // Ensure we have *some* category selected, default to first if somehow null
                 finalCategoryId =
                     widget.transaction.categoryId ??
                     (budgetProvider.state.categories.isNotEmpty
@@ -184,8 +235,10 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
 
             final updatedTransaction = Transaction(
               finalAmount,
-              _tagController.text.trim(),
+              _selectedSubCategory, // Tag kept as subCategory for legacy
               _selectedDate,
+              subCategory: _selectedSubCategory,
+              remarks: _remarksController.text.trim(),
               categoryType: finalCategoryType,
               categoryId: finalCategoryId,
               id: widget.transaction.id,
