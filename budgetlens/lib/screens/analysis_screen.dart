@@ -56,7 +56,7 @@ class AnalysisScreen extends StatelessWidget {
                             amount: amountDisplay,
                             baseTarget: target,
                             extraIncome: state.totalIncome,
-                            color: Colors.green,
+                            color: Color(cat.colorValue),
                             icon: Icons.savings,
                             onTap: () {
                               Navigator.push(
@@ -75,8 +75,7 @@ class AnalysisScreen extends StatelessWidget {
                             title: categoryLabel,
                             spent: amountDisplay,
                             target: target,
-                            color: Colors
-                                .blue, // In a real app we might assign colors per category
+                            color: Color(cat.colorValue),
                             icon: Icons.category,
                             onTap: () {
                               Navigator.push(

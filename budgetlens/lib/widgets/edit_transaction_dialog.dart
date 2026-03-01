@@ -153,7 +153,7 @@ class _EditTransactionDialogState extends State<EditTransactionDialog> {
             DropdownButtonFormField<String>(
               value: _selectedSubCategory,
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              items: Transaction.subCategories.map((String value) {
+              items: budgetProvider.state.subCategories.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),

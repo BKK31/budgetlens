@@ -166,10 +166,15 @@ class TransactionsScreen extends StatelessWidget {
     if (provider.state.isCustomStrategy && transaction.categoryId != null) {
       final cat = provider.state.categories.firstWhere(
         (c) => c.id == transaction.categoryId,
-        orElse: () => CustomCategory(id: '', name: 'Unknown', percentage: 0),
+        orElse: () => CustomCategory(
+          id: '',
+          name: 'Unknown',
+          percentage: 0,
+          colorValue: 0xFF9E9E9E,
+        ),
       );
       label = cat.name;
-      color = cat.isSavings ? Colors.green.shade100 : Colors.blue.shade100;
+      color = Color(cat.colorValue).withOpacity(0.2);
     } else {
       switch (transaction.categoryType) {
         case CategoryType.needs:

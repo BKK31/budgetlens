@@ -141,7 +141,7 @@ class _NumpadState extends State<Numpad> {
     CategoryType categoryType = CategoryType.needs,
     String? categoryId,
   }) {
-    String selectedSubCategory = Transaction.subCategories.first;
+    String selectedSubCategory = budgetProvider.state.subCategories.first;
     final remarksController = TextEditingController();
 
     showDialog(
@@ -170,7 +170,9 @@ class _NumpadState extends State<Numpad> {
                           vertical: 8,
                         ),
                       ),
-                      items: Transaction.subCategories.map((String value) {
+                      items: budgetProvider.state.subCategories.map((
+                        String value,
+                      ) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -234,6 +236,7 @@ class _NumpadState extends State<Numpad> {
                           id: '',
                           name: 'Selected Category',
                           percentage: 0,
+                          colorValue: 0xFF2196F3,
                         ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(

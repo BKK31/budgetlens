@@ -5,7 +5,6 @@ import 'dart:io';
 import 'models.dart';
 import 'calculator.dart';
 import 'currency_data.dart';
-import 'package:path_provider/path_provider.dart';
 
 class BudgetProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
@@ -186,13 +185,14 @@ class BudgetProvider extends ChangeNotifier {
     await prefs.setString('startDate', startDate.toString());
     await prefs.setString('endDate', endDate.toString());
     await prefs.setString('currencyCode', currencyCode);
-    await prefs.setBool('isCustomStrategy', state.isCustomStrategy);
-    if (state.isCustomStrategy) {
+    await prefs.setBool('isCustomStrategy', isCustomStrategy);
+    if (isCustomStrategy && categories != null) {
       await prefs.setString(
         'customCategories',
-        jsonEncode(state.categories.map((c) => c.toJson()).toList()),
+        jsonEncode(categories.map((c) => c.toJson()).toList()),
       );
     }
+    await prefs.setString('subCategories', jsonEncode(state.subCategories));
 
     await markLaunchComplete();
     notifyListeners();
@@ -261,6 +261,12 @@ class BudgetProvider extends ChangeNotifier {
       }
     }
 
+    // Load subcategories
+    final savedSubCategories = prefs.getString('subCategories');
+    if (savedSubCategories != null) {
+      state.subCategories = List<String>.from(jsonDecode(savedSubCategories));
+    }
+
     if (savedBudget != null && savedStartDate != null && savedEndDate != null) {
       state.totalBudget = savedBudget;
       state.budgetStartDate = DateTime.parse(savedStartDate);
@@ -308,6 +314,32 @@ class BudgetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateCategories({
+    required bool isCustomStrategy,
+    List<CustomCategory>? categories,
+  }) async {
+    state.isCustomStrategy = isCustomStrategy;
+    if (isCustomStrategy && categories != null) {
+      state.categories = categories;
+    } else {
+      state.categories = [];
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isCustomStrategy', state.isCustomStrategy);
+    if (state.isCustomStrategy) {
+      await prefs.setString(
+        'customCategories',
+        jsonEncode(state.categories.map((c) => c.toJson()).toList()),
+      );
+    } else {
+      await prefs.remove('customCategories');
+    }
+
+    recalculateTotalSpent();
+    notifyListeners();
+  }
+
   Future<String> createBackup() async {
     final Map<String, dynamic> backupData = {
       'totalBudget': state.totalBudget,
@@ -316,6 +348,7 @@ class BudgetProvider extends ChangeNotifier {
       'currencyCode': state.currencyCode,
       'isCustomStrategy': state.isCustomStrategy,
       'customCategories': state.categories.map((c) => c.toJson()).toList(),
+      'subCategories': state.subCategories,
       'transactions': transactions.map((t) {
         return {
           'id': t.id,
@@ -358,6 +391,10 @@ class BudgetProvider extends ChangeNotifier {
             .toList();
       }
 
+      if (decoded.containsKey('subCategories')) {
+        state.subCategories = List<String>.from(decoded['subCategories']);
+      }
+
       final List<dynamic> newTransactionsJson = decoded['transactions'];
 
       final newTransactions = newTransactionsJson.map((t) {
@@ -389,6 +426,8 @@ class BudgetProvider extends ChangeNotifier {
         );
       }
 
+      await prefs.setString('subCategories', jsonEncode(state.subCategories));
+
       // Save transactions directly
       final transactionData = newTransactions.map((t) {
         return {
@@ -404,6 +443,16 @@ class BudgetProvider extends ChangeNotifier {
       }).toList();
       await prefs.setString('transactions', jsonEncode(transactionData));
 
+      // Update in-memory state
+      state.totalBudget = newBudget;
+      state.budgetStartDate = newStartDate;
+      state.budgetEndDate = newEndDate;
+      state.currencyCode = newCurrency;
+      state.isCustomStrategy = isCustomStrategy;
+      state.categories = customCategories;
+      transactions = newTransactions;
+
+      recalculateTotalSpent();
       // Mark launch complete just in case
       await markLaunchComplete();
     } catch (e) {
@@ -536,5 +585,47 @@ class BudgetProvider extends ChangeNotifier {
     } catch (e) {
       throw Exception('Error writing backup file: $e');
     }
+  }
+
+  // --- Subcategory Management ---
+
+  Future<void> addSubCategory(String name) async {
+    if (!state.subCategories.contains(name)) {
+      state.subCategories.add(name);
+      await _saveSubCategories();
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeSubCategory(String name) async {
+    state.subCategories.remove(name);
+    await _saveSubCategories();
+    notifyListeners();
+  }
+
+  Future<void> renameSubCategory(String oldName, String newName) async {
+    int index = state.subCategories.indexOf(oldName);
+    if (index != -1 && !state.subCategories.contains(newName)) {
+      state.subCategories[index] = newName;
+
+      // Update existing transactions
+      for (var t in transactions) {
+        if (t.subCategory == oldName) {
+          t.subCategory = newName;
+          if (t.tag == oldName) {
+            t.tag = newName;
+          }
+        }
+      }
+
+      await saveTransactions();
+      await _saveSubCategories();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveSubCategories() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('subCategories', jsonEncode(state.subCategories));
   }
 }

@@ -4,7 +4,6 @@ import '../build_provider.dart';
 import '../currency_data.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
-import 'dart:io';
 import 'category_setup_screen.dart';
 
 class SetupScreen extends StatefulWidget {

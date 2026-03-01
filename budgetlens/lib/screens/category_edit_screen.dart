@@ -1,60 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:uuid/uuid.dart';
 import '../build_provider.dart';
 import '../models.dart';
 
-class CategorySetupScreen extends StatefulWidget {
-  final double budget;
-  final DateTime startDate;
-  final DateTime endDate;
-  final String currencyCode;
-
-  const CategorySetupScreen({
-    super.key,
-    required this.budget,
-    required this.startDate,
-    required this.endDate,
-    required this.currencyCode,
-  });
+class CategoryEditScreen extends StatefulWidget {
+  const CategoryEditScreen({super.key});
 
   @override
-  State<CategorySetupScreen> createState() => _CategorySetupScreenState();
+  State<CategoryEditScreen> createState() => _CategoryEditScreenState();
 }
 
-class _CategorySetupScreenState extends State<CategorySetupScreen> {
+class _CategoryEditScreenState extends State<CategoryEditScreen> {
   bool isCustomStrategy = false;
   List<CustomCategory> categories = [];
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize with default custom mapping for user to edit if they choose
-    categories = [
-      CustomCategory(
-        id: const Uuid().v4(),
-        name: 'Needs',
-        percentage: 50,
-        isSavings: false,
-        colorValue: 0xFF2196F3, // Blue
-      ),
-      CustomCategory(
-        id: const Uuid().v4(),
-        name: 'Wants',
-        percentage: 30,
-        isSavings: false,
-        colorValue: 0xFFFF9800, // Orange
-      ),
-      CustomCategory(
-        id: const Uuid().v4(),
-        name: 'Savings',
-        percentage: 20,
-        isSavings: true,
-        colorValue: 0xFF4CAF50, // Green
-      ),
-    ];
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final provider = context.read<BudgetProvider>();
+      isCustomStrategy = provider.state.isCustomStrategy;
+      if (isCustomStrategy) {
+        categories = provider.state.categories
+            .map(
+              (c) => CustomCategory(
+                id: c.id,
+                name: c.name,
+                percentage: c.percentage,
+                amount: c.amount,
+                isSavings: c.isSavings,
+                colorValue: c.colorValue,
+              ),
+            )
+            .toList();
+      } else {
+        // Initialize with default mapping for user to edit if they switch to custom
+        categories = [
+          CustomCategory(
+            id: const Uuid().v4(),
+            name: 'Needs',
+            percentage: 50,
+            isSavings: false,
+            colorValue: 0xFF2196F3,
+          ),
+          CustomCategory(
+            id: const Uuid().v4(),
+            name: 'Wants',
+            percentage: 30,
+            isSavings: false,
+            colorValue: 0xFFFF9800,
+          ),
+          CustomCategory(
+            id: const Uuid().v4(),
+            name: 'Savings',
+            percentage: 20,
+            isSavings: true,
+            colorValue: 0xFF4CAF50,
+          ),
+        ];
+      }
+      _initialized = true;
+    }
   }
+
+  double get budget => context.read<BudgetProvider>().state.totalBudget;
+  String get currencyCode => context.read<BudgetProvider>().state.currencyCode;
 
   double get totalPercentage {
     return categories
@@ -69,7 +82,7 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
   }
 
   double get totalAllocation {
-    return totalFixedAmount + (widget.budget * (totalPercentage / 100.0));
+    return totalFixedAmount + (budget * (totalPercentage / 100.0));
   }
 
   void _addCategory() {
@@ -86,10 +99,9 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             double currentAllocation = totalAllocation;
-            double remaining = widget.budget - currentAllocation;
-            // The remaining percentage should be based on the actual remaining budget
-            double remainingPercent = widget.budget > 0
-                ? (remaining / widget.budget * 100)
+            double remaining = budget - currentAllocation;
+            double remainingPercent = budget > 0
+                ? (remaining / budget * 100)
                 : 0;
 
             return AlertDialog(
@@ -109,9 +121,7 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                           controller: valueController,
                           decoration: InputDecoration(
                             labelText: isFixedAmount ? 'Amount' : 'Percentage',
-                            prefixText: isFixedAmount
-                                ? widget.currencyCode + ' '
-                                : null,
+                            prefixText: isFixedAmount ? '$currencyCode ' : null,
                             suffixText: isFixedAmount ? null : '%',
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
@@ -245,38 +255,37 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
     );
   }
 
-  Future<void> _finishSetup() async {
-    final tolerance = 0.05; // Slightly larger tolerance for floating point
+  Future<void> _saveChanges() async {
+    final tolerance = 0.05;
     double allocation = totalAllocation;
-    if (isCustomStrategy && (allocation - widget.budget).abs() > tolerance) {
+    if (isCustomStrategy && (allocation - budget).abs() > tolerance) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Total allocation (${allocation.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}) must match budget (${widget.budget.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')})',
+            'Total allocation (${allocation.toStringAsFixed(2)}) must match budget (${budget.toStringAsFixed(2)})',
           ),
         ),
       );
       return;
     }
 
-    await Provider.of<BudgetProvider>(context, listen: false).saveBudgetSetup(
-      widget.budget,
-      widget.startDate,
-      widget.endDate,
-      currencyCode: widget.currencyCode,
+    await context.read<BudgetProvider>().updateCategories(
       isCustomStrategy: isCustomStrategy,
       categories: isCustomStrategy ? categories : null,
     );
 
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/');
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Strategy updated!')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Budget Strategy')),
+      appBar: AppBar(title: const Text('Edit Budget Strategy')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -317,18 +326,17 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          'Total: ${totalAllocation.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} / ${widget.budget.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
+                          'Total: ${totalAllocation.toStringAsFixed(2)} / ${budget.toStringAsFixed(2)}',
                           style: TextStyle(
-                            color:
-                                (totalAllocation - widget.budget).abs() < 0.01
+                            color: (totalAllocation - budget).abs() < 0.01
                                 ? Colors.green
                                 : Colors.red,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if ((totalAllocation - widget.budget).abs() >= 0.01)
+                        if ((totalAllocation - budget).abs() >= 0.01)
                           Text(
-                            'Remaining: ${(widget.budget - totalAllocation).toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
+                            'Remaining: ${(budget - totalAllocation).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
@@ -345,11 +353,11 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                     itemBuilder: (context, index) {
                       final cat = categories[index];
                       double calculatedPercent = cat.amount != null
-                          ? (cat.amount! / widget.budget * 100)
+                          ? (cat.amount! / budget * 100)
                           : cat.percentage;
                       String displayValue = cat.amount != null
-                          ? '${widget.currencyCode} ${cat.amount!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} (${calculatedPercent.toStringAsFixed(1)}%)'
-                          : '${cat.percentage.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}%';
+                          ? '$currencyCode ${cat.amount!.toStringAsFixed(2)} (${calculatedPercent.toStringAsFixed(1)}%)'
+                          : '${cat.percentage.toStringAsFixed(2)}%';
                       return ListTile(
                         title: Text(cat.name),
                         subtitle: Text(
@@ -379,8 +387,8 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _finishSetup,
-                  child: const Text('Complete Setup'),
+                  onPressed: _saveChanges,
+                  child: const Text('Save Changes'),
                 ),
               ),
             ],

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
 import 'transactions_screen.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:restart_app/restart_app.dart';
-import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:budgetlens/backup_channel.dart';
+import 'subcategory_management_screen.dart';
+import 'category_edit_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -433,6 +433,42 @@ class SettingsScreen extends StatelessWidget {
                           },
                         ),
                         ListTile(
+                          leading: const Icon(Icons.category_outlined),
+                          title: Text(
+                            'Manage Subcategories',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SubcategoryManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.settings_suggest_outlined),
+                          title: Text(
+                            'Budget Strategy & Categories',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const CategoryEditScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
                           leading: const Icon(Icons.language),
                           title: Text(
                             'Currency',
@@ -460,8 +496,11 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              final jsonString = await budgetProvider.createBackup();
-                              final bytes = Uint8List.fromList(utf8.encode(jsonString));
+                              final jsonString = await budgetProvider
+                                  .createBackup();
+                              final bytes = Uint8List.fromList(
+                                utf8.encode(jsonString),
+                              );
                               await BackupChannel.exportJsonBackup(bytes);
 
                               if (context.mounted) {
@@ -492,7 +531,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onTap: () async {
                             try {
-                              final jsonString = await BackupChannel.importJsonBackup();
+                              final jsonString =
+                                  await BackupChannel.importJsonBackup();
                               if (jsonString != null) {
                                 await budgetProvider.restoreBackup(jsonString);
 
@@ -520,7 +560,9 @@ class SettingsScreen extends StatelessWidget {
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error restoring backup: $e')),
+                                  SnackBar(
+                                    content: Text('Error restoring backup: $e'),
+                                  ),
                                 );
                               }
                             }

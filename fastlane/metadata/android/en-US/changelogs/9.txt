@@ -1,0 +1,6 @@
+- Dynamic Subcategories: Add, rename, and manage your own subcategories (Food, Rent, etc.).
+- Flexible Main Categories: Switch between the 50/30/20 rule and a custom strategy anytime.
+- Category Customization: High-precision budgeting with custom colors for every category.
+- Improved Analysis: Enhanced charts reflecting your custom category colors and types.
+- Smart Income Handling: Income now correctly accumulates in your designated savings buckets.
+- Bug Fixes: Resolved budget strategy persistence and various UI refinements.

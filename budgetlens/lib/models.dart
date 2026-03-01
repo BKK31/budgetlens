@@ -6,6 +6,7 @@ class CustomCategory {
   double percentage;
   double? amount; // Optional fixed amount
   bool isSavings;
+  int colorValue; // ARGB color value
 
   CustomCategory({
     required this.id,
@@ -13,6 +14,7 @@ class CustomCategory {
     required this.percentage,
     this.amount,
     this.isSavings = false,
+    required this.colorValue,
   });
 
   Map<String, dynamic> toJson() => {
@@ -21,6 +23,7 @@ class CustomCategory {
     'percentage': percentage,
     'amount': amount,
     'isSavings': isSavings,
+    'colorValue': colorValue,
   };
 
   factory CustomCategory.fromJson(Map<String, dynamic> json) => CustomCategory(
@@ -29,6 +32,7 @@ class CustomCategory {
     percentage: json['percentage'],
     amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
     isSavings: json['isSavings'] ?? false,
+    colorValue: json['colorValue'] ?? 0xFF2196F3, // Default blue
   );
 }
 
@@ -52,6 +56,23 @@ class BudgetState {
   // Legacy fields (kept for migration/backward compatibility if needed)
   double needsSpent = 0.0;
   double wantsSpent = 0.0;
+
+  // Dynamic Subcategories
+  List<String> subCategories = [
+    'Food',
+    'Rent/Home',
+    'Utilities',
+    'Transport',
+    'Health',
+    'Shopping',
+    'Entertainment',
+    'Travel',
+    'Education',
+    'Gift',
+    'Investment',
+    'Savings',
+    'Other',
+  ];
 }
 
 enum CategoryType { needs, wants, savings }
@@ -81,7 +102,7 @@ class Transaction {
     String? id,
   }) : id = id ?? const Uuid().v4();
 
-  static const List<String> subCategories = [
+  static const List<String> defaultSubCategories = [
     'Food',
     'Rent/Home',
     'Utilities',
