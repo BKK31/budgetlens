@@ -4,6 +4,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:uuid/uuid.dart';
 import '../build_provider.dart';
 import '../models.dart';
+import '../widgets/category_badge.dart';
 
 class CategoryEditScreen extends StatefulWidget {
   const CategoryEditScreen({super.key});
@@ -359,7 +360,11 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
                           ? '$currencyCode ${cat.amount!.toStringAsFixed(2)} (${calculatedPercent.toStringAsFixed(1)}%)'
                           : '${cat.percentage.toStringAsFixed(2)}%';
                       return ListTile(
-                        title: Text(cat.name),
+                        title: CategoryBadge(
+                          label: cat.name,
+                          color: Color(cat.colorValue),
+                          fontSize: 16,
+                        ),
                         subtitle: Text(
                           '$displayValue ${cat.isSavings ? "(Savings)" : "(Expense)"}',
                         ),

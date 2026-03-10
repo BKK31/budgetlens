@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../build_provider.dart';
 import '../models.dart';
+import '../widgets/category_badge.dart';
 
 class Numpad extends StatefulWidget {
   const Numpad({super.key});
@@ -72,9 +73,14 @@ class _NumpadState extends State<Numpad> {
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    '${cat.name} (${cat.percentage}%)',
-                    style: const TextStyle(fontSize: 18),
+                  child: CategoryBadge(
+                    label: '${cat.name} (${cat.percentage}%)',
+                    color: Color(cat.colorValue),
+                    fontSize: 18,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               );

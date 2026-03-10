@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:budgetlens/screens/transactions_screen.dart';
 import '../models.dart';
 import '../build_provider.dart';
+import '../widgets/category_badge.dart';
 
 class AnalysisScreen extends StatelessWidget {
   const AnalysisScreen({super.key});
@@ -267,12 +268,7 @@ class AnalysisScreen extends StatelessWidget {
                 children: [
                   Icon(icon, color: color, size: 28),
                   const SizedBox(width: 12),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  CategoryBadge(label: title, color: color, fontSize: 18),
                   const Spacer(),
                   Text(
                     '${provider.currencySymbol}${spent.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} / ${provider.currencySymbol}${target.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}',
@@ -335,12 +331,7 @@ class AnalysisScreen extends StatelessWidget {
                 children: [
                   Icon(icon, color: color, size: 28),
                   const SizedBox(width: 12),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  CategoryBadge(label: title, color: color, fontSize: 18),
                 ],
               ),
               const SizedBox(height: 16),

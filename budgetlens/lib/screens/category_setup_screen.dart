@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../build_provider.dart';
 import '../models.dart';
+import '../widgets/category_badge.dart';
 
 class CategorySetupScreen extends StatefulWidget {
   final double budget;
@@ -351,7 +352,11 @@ class _CategorySetupScreenState extends State<CategorySetupScreen> {
                           ? '${widget.currencyCode} ${cat.amount!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} (${calculatedPercent.toStringAsFixed(1)}%)'
                           : '${cat.percentage.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}%';
                       return ListTile(
-                        title: Text(cat.name),
+                        title: CategoryBadge(
+                          label: cat.name,
+                          color: Color(cat.colorValue),
+                          fontSize: 16,
+                        ),
                         subtitle: Text(
                           '$displayValue ${cat.isSavings ? "(Savings)" : "(Expense)"}',
                         ),

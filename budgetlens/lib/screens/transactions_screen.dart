@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../build_provider.dart';
 import '../models.dart';
 import '../widgets/edit_transaction_dialog.dart';
+import '../widgets/category_badge.dart';
 
 class TransactionsScreen extends StatelessWidget {
   final CategoryType? filter;
@@ -160,7 +161,7 @@ class TransactionsScreen extends StatelessWidget {
     BuildContext context,
     BudgetProvider provider,
   ) {
-    Color color = Colors.grey.shade200;
+    Color color = Colors.grey;
     String label = 'Unknown';
 
     if (provider.state.isCustomStrategy && transaction.categoryId != null) {
@@ -174,38 +175,28 @@ class TransactionsScreen extends StatelessWidget {
         ),
       );
       label = cat.name;
-      color = Color(cat.colorValue).withOpacity(0.2);
+      color = Color(cat.colorValue);
     } else {
       switch (transaction.categoryType) {
         case CategoryType.needs:
-          color = Colors.blue.shade100;
+          color = Colors.blue;
           label = 'Needs';
           break;
         case CategoryType.wants:
-          color = Colors.orange.shade100;
+          color = Colors.orange;
           label = 'Wants';
           break;
         case CategoryType.savings:
-          color = Colors.green.shade100;
+          color = Colors.green;
           label = 'Savings';
           break;
       }
     }
 
-    return Container(
+    return CategoryBadge(
+      label: label,
+      color: color,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      ),
     );
   }
 
